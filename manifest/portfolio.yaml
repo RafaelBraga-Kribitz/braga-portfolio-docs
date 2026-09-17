@@ -27,7 +27,8 @@ status_vocabulary: [Prototype, Foundation, In development, Functional, Complete,
 #   primary_chart: repo-relative path of the main result chart / rendered example, shown after the badges and status line
 #   demo: motion | static  (static requires demo_reason)  — interactive projects only
 #   hosted_urls: verified live URLs that must appear in the README
-#   license: override for the license policy; license_blocked_reason: escalate instead of creating a file
+#   license: explicit license id (policy §1 step 3); license_notice: NOTICE text for bundled third-party material;
+#   license_blocked_reason: escalation, allowed only for contract/employer work or conflicting declarations
 #   public_data: false => production-data section not required
 #   estimation: none => uncertainty check not applicable
 
@@ -139,7 +140,7 @@ projects:
     title: "NextMove"
     descriptor: "A headless behavioural decision engine for e-commerce next-best-action. Phase 1: reproducible simulated world, ingest, and features."
     banner: generated
-    license_blocked_reason: "no license is declared anywhere in the repository and the charter frames NextMove as a product with a launch gate; choosing MIT vs. a restrictive license is the owner's call"
+    license: Apache-2.0   # policy §3: product framing with a launch gate and no declaration -> Apache-2.0 (patent grant, contribution-ready)
 
   - name: metric_lineage_simulator
     github: RafaelBraga-Kribitz/metric_lineage_simulator
@@ -164,7 +165,21 @@ projects:
     title: "Chart Audit Framework"
     descriptor: "Skill pack and read-only ratchet that routes each chart in a target repository to skip, re-verify, or re-audit."
     banner: generated
-    license_blocked_reason: "Deterministic_Data_Visualization_Framework/references bundles thousands of third-party images and pages (datavizproject.com and others); an MIT file would purport to license them. Decide: remove the references tree, or add a LICENSE scoped to the author's own files with a NOTICE excluding references/"
+    license: Apache-2.0   # policy §3: bundled third-party reference material -> Apache-2.0 for the author's files + NOTICE excluding the references tree
+    license_notice: |
+      Chart Audit Framework
+      Copyright (c) 2026 Rafael Braga-Kribitz
+
+      The Apache License, Version 2.0 in LICENSE covers the files authored for this
+      repository: chart-audit/, chart-expert/ (skill files), rules/, ratchet/,
+      improvement_plan/, docs/, and README.md.
+
+      It does NOT cover the third-party reference material collected under
+      Deterministic_Data_Visualization_Framework/references/ (pages, images and PDFs
+      from datavizproject.com, chart.guide, PolicyViz, the Financial Times Visual
+      Vocabulary and other publishers). Those files remain the property of their
+      respective rights holders and are kept here for study only; no licence to copy
+      or redistribute them is granted by this repository.
 
   - name: braga-portfolio-docs
     github: RafaelBraga-Kribitz/braga-portfolio-docs
