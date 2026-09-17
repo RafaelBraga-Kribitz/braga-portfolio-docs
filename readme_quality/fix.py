@@ -229,7 +229,7 @@ class Fixer:
                 banner_block = b
                 break
         if banner_block is None:
-            alt = f"{self.project.title or self.project.name} — {self.project.descriptor}".strip(" —") if self.project.descriptor else (self.project.title or self.project.name)
+            alt = f"{self.project.title or self.project.name}: {self.project.descriptor}".strip(": ") if self.project.descriptor else (self.project.title or self.project.name)
             alt = alt.replace("]", ")").replace("[", "(")
             banner_block = {"kind": "image", "target": target, "lines": [f"![{alt}]({target})"]}
             self.changes.append(f"identity.hero: inserted banner reference {target}")
