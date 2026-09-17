@@ -86,6 +86,17 @@ class Registry:
                 continue
         return None
 
+    def by_remote(self, repo_dir: Path) -> Project | None:
+        """Match by the checkout's origin URL (CI checkouts live in folders like `repo/`)."""
+        from .repofacts import _git, github_slug_from_remote
+        slug = github_slug_from_remote(_git(Path(repo_dir), "remote", "get-url", "origin")).lower()
+        if not slug:
+            return None
+        for p in self.projects:
+            if p.github.lower() == slug:
+                return p
+        return None
+
     def resolve_path(self, p: Project) -> Path:
         pp = Path(p.path).expanduser()
         return pp if pp.is_absolute() else self.repos_root / pp
@@ -123,7 +134,7 @@ def load_registry(path: Path | str | None = None, repos_root: str | Path | None 
 def project_for_repo(registry: Registry | None, repo_dir: Path, detected: dict | None = None) -> Project:
     """Return the registry project for a checkout, or a synthesized one from detection."""
     if registry:
-        p = registry.by_path(repo_dir) or registry.by_name(Path(repo_dir).name)
+        p = registry.by_path(repo_dir) or registry.by_name(Path(repo_dir).name) or registry.by_remote(repo_dir)
         if p:
             return p
     d = detected or {}

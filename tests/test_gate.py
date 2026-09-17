@@ -171,3 +171,15 @@ def test_manifest_ids_are_stable_and_checks_exist(manifest):
     for r in manifest.requirements:
         assert r.check in C.CHECKS, r.check
         assert re.match(r"^[a-z]+\.[a-z0-9_]+$", r.id), r.id
+
+
+def test_registry_matches_ci_checkout_by_remote(tmp_path, manifest):
+    import subprocess
+    from readme_quality.registry import Author, Registry, project_for_repo
+    repo = make_repo(tmp_path, "repo", F.ANALYTICAL, COMMON_FILES)
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "remote", "add", "origin", "https://github.com/Someone/real-name.git"], cwd=repo, check=True)
+    reg = Registry(path=tmp_path / "p.yaml", repos_root=tmp_path, author=Author(), status_vocabulary=["Complete"],
+                   projects=[Project(name="real-name", path="real-name", github="Someone/real-name", type="analytical", status="Complete", license_blocked_reason="x")])
+    p = project_for_repo(reg, repo, {"type": "library"})
+    assert p.name == "real-name" and p.license_blocked_reason == "x"
