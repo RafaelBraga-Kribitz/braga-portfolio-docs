@@ -1,0 +1,84 @@
+{
+  "output": "C:\\Users\\Benutzer1\\Dev\\portfolio-readme-work\\braga-portfolio-docs\\docs\\assets\\hero.png",
+  "width": 1600,
+  "height": 640,
+  "mode": "light",
+  "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
+  "title_size": 112,
+  "descriptor_size": 34,
+  "attempts": 1,
+  "blocks": {
+    "kind": {
+      "bbox": [
+        72,
+        72,
+        387,
+        102
+      ],
+      "lines": [
+        "BRAGA · DOCUMENTATION"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "status": {
+      "bbox": [
+        1378,
+        72,
+        1528,
+        102
+      ],
+      "lines": [
+        "MAINTAINED"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "facts": {
+      "bbox": [
+        72,
+        542,
+        958,
+        568
+      ],
+      "lines": [
+        "LICENSE  MIT  ·  REPO  github.com/RafaelBraga-Kribitz/braga-portfolio-docs"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "title": {
+      "bbox": [
+        72,
+        128,
+        1371,
+        356
+      ],
+      "lines": [
+        "BRAGA README Quality",
+        "Gate"
+      ],
+      "font": "Sohne-Fett.otf"
+    },
+    "descriptor": {
+      "bbox": [
+        72,
+        384,
+        1177,
+        474
+      ],
+      "lines": [
+        "The portfolio documentation contract, its machine-readable manifest, the",
+        "gate, the fixer, and the hero generator."
+      ],
+      "font": "Sohne-Buch.otf"
+    }
+  },
+  "guardrails": [
+    "safe-area",
+    "wrap-and-shrink",
+    "line-length",
+    "no-overlap",
+    "glyph-coverage-per-char",
+    "contrast>=4.5",
+    "pixel-scan"
+  ],
+  "validated": true
+}

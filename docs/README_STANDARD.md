@@ -1,459 +1,205 @@
-# BRAGA Portfolio Project README Standard v1.0
+# BRAGA Portfolio README Quality Standard v1.1
 
-**Status:** Active
-**Last updated:** 2026-09-16
-**Owner:** Rafael Braga-Kribitz
+**Status:** Active · **Last updated:** 2026-09-17 · **Owner:** Rafael Braga-Kribitz
+**Machine-readable companion:** [`../manifest/requirements.yaml`](../manifest/requirements.yaml) (requirement ids, severities, checks, remediation)
+**Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md)
 
-Every public portfolio project has the same documentation contract. The project itself determines the content.
+Every public portfolio project satisfies the same documentation contract. The project itself determines
+the content.
 
 > **Standardize the presentation and evidence architecture, not the intellectual content.**
+> Same minimum quality bar, not identical READMEs.
 
-An MMM project and a charting library both have a Decision / Result slot. They must not have the same kind of result. Sections that are genuinely irrelevant are omitted, not filled with boilerplate.
+The README is the **executive interface to the repository**, not the repository dumped into Markdown.
+Anything longer than a screen of detail (methodology, governance, migration notes, long caveats) lives
+in a linked document. The README stays under 450 lines.
 
-The README is the **executive interface to the repository**. It is not a dump of the repository into Markdown.
+## 0. Two layers
 
-```text
-README
-   │
-   ├── Executive explanation
-   ├── Primary evidence
-   ├── Key results
-   └── Links
-        │
-        ├── Architecture
-        ├── Methodology
-        ├── Data provenance
-        ├── Validation
-        ├── Governance
-        └── Detailed reports
-```
+| Layer | What it is | How the gate treats it |
+|---|---|---|
+| **Minimum standard** | The `required` requirements below, filtered by project type and registry flags | `FAIL` blocks the gate |
+| **Excellence layer** | `recommended` requirements and every project-specific section outside the standard vocabulary | never fails; reported as `WARN` or `PASS_WITH_EXCELLENCE` |
 
-This document is the human-readable contract. The machine-checkable companion is [`tools/readme_audit.py`](../tools/readme_audit.py), driven by [`tools/portfolio.yaml`](../tools/portfolio.yaml). Project type is declared in that registry. The checker never infers type from folder names or README prose.
+Existing project-specific material is preserved. Each H2 heading outside the standard vocabulary is
+classified `project_specific_excellence` and kept. When the same addition proves valuable in several
+repositories, it is promoted into the manifest (version bump, new check, tests, re-audit).
 
----
+## 1. Project types and registry flags
 
-## 1. Identity
+Type and status are **declared** in `manifest/portfolio.yaml`; the gate never infers them from prose.
 
-Every project starts with:
-
-```text
-# Project Name
-[Hero visual]
-```
-
-### Required
-
-- Clear project name as the H1.
-- One visual identity element in the identity zone (before the first H2):
-  - hero banner, or
-  - project screenshot, or
-  - primary visualization, or
-  - for a library, a rendered example plot, or
-  - a Mermaid (or equivalent) architecture / workflow diagram when no chart or screenshot exists yet.
-
-**Every serious portfolio project gets a hero visual.** The visual does not have to be decorative. For analytical projects, a strong primary chart can be the hero. Reuse an existing chart, screenshot, or example plot. Do not manufacture decorative banners. Do not add a fake GIF to a library because an application has one.
-
----
-
-## 2. Status / metadata
-
-Immediately below the identity:
-
-```text
-[CI] [Reproducibility] [Python] [License] ...
-Status: Active | Foundation | Complete | ...
-```
-
-### Required information
-
-- Project status, using the controlled vocabulary in §19.
-- Technology / runtime where relevant.
-- License.
-- CI status where a workflow exists.
-- Reproducibility status where a reproducibility workflow exists.
-
-A project must never make a visitor guess whether something is implemented, planned, simulated, or aspirational.
-
----
-
-## 3. One-line business / problem explanation
-
-**Mandatory.** Maximum approximately two sentences. Answers:
-
-> **What problem does this project solve, for whom, and why does it matter?**
-
-No project begins with "This is a Python project that…" or "This repository contains…". Start with the problem.
-
----
-
-## 4. Executive answer / result
-
-The visitor must know what they are looking at within the first screenful.
-
-| Project type | Heading | Content |
-| --- | --- | --- |
-| Analytical | `Decision summary` or `Decision` | What the analysis found |
-| Library / tool | `What it does` | Concrete capability |
-| Framework | `The idea` | Core mechanism |
-| Unfinished / foundation | `Project status` | What exists / what does not |
-
-These headings are **aliases** of one slot. A project needs one of them, not all of them.
-
----
-
-## 5. Primary evidence
-
-Every project needs one piece of immediate evidence. No project should ask the reader to finish the README before showing that the project exists.
-
-| Project type | Primary evidence |
-| --- | --- |
-| Analytical | Main result / chart |
-| ML | Model / result visualization |
-| Decision analysis | Decision / result |
-| Dashboard | Screenshot |
-| Application | Screenshot / GIF / video |
-| Library | Working example |
-| Framework | Architecture / workflow |
-| Research | Main finding |
-| Incomplete project | Architecture + honest status |
-
----
-
-## 6. See it running
-
-Mandatory for anything interactive.
-
-Possible evidence: screenshot, GIF, video, live demo, dashboard, API documentation, CLI output, rendered report.
-
-If the project has a visual or interactive interface, **show the interface before asking the visitor to install it.**
-
-A library's working example in §5 satisfies this slot. A framework's architecture diagram plus a copy-pasteable quick start satisfies it. Do not invent a GIF.
-
----
-
-## 7. Audience paths
-
-At least two depths:
-
-| Depth | Question |
-| --- | --- |
-| Fast path | What did you build and why should I care? |
-| Deep path | How exactly did you build and validate it? |
-
-The four-persona table is recommended for analytical case studies, not required for libraries:
-
-```markdown
-## Explore this project
-| Audience | Start here |
+| Type | Meaning |
 |---|---|
-| Recruiter | 2-minute summary |
-| Hiring manager | Decision + methodology |
-| Technical reviewer | Code + architecture |
-| Auditor | Data + validation + governance |
-```
-
-A two-row table, or a short "Start here" list with two links, is enough for tools and frameworks.
-
----
-
-## 8. Results
-
-For analytical projects. Must contain, when the project permits quantitative evaluation:
-
-- Main metrics.
-- Important comparisons.
-- Decision-relevant outputs.
-- Uncertainty where relevant.
-
-Avoid "The model performed well." Prefer "MAPE was 3.0% versus 4.7% for the ridge baseline."
-
-**Incomplete analytical projects** omit this section and say so under `Project status`. They must not invent numbers. An explicit "no results yet" statement satisfies the results slot for `incomplete: true` projects.
-
----
-
-## 9. Method
-
-Every project must explain input → transformation → analysis/model → output, at a depth that matches the type.
-
-A software library may do this with a three-step workflow diagram. A decision-analysis project uses question → evidence → assumptions → model → uncertainty → decision. Do not paste a generic data-science funnel into a framework README.
-
----
-
-## 10. Architecture
-
-Mandatory for non-trivial projects. Prefer Mermaid where it renders cleanly; ASCII is acceptable. Link out to a dedicated architecture document when the diagram would dominate the README.
-
----
-
-## 11. Data provenance
-
-Mandatory for data / analytical projects.
-
-Identify source, period, population, and grain. Tag claims:
-
-| Tag | Meaning |
-| --- | --- |
-| `VERIFIED` | Directly supported by external / source data |
-| `CALIBRATED` | Derived using documented assumptions |
-| `SIMULATED` | Generated / modelled |
-| `ILLUSTRATIVE` | Example only |
-
----
-
-## 12. Validation
-
-Every analytical / modeling project answers:
-
-> **How do we know this isn't simply producing plausible-looking numbers?**
-
-Acceptable mechanisms include holdout, cross-validation, known-truth synthetic test, baseline comparison, backtest, simulation validation, sensitivity analysis, external benchmark, unit tests, integration tests.
-
-Preferred analytical pattern: **known truth → model recovery → baseline comparison → holdout → decision.** Report model failure when it happens.
-
-For libraries and frameworks, a named acceptance test or gate table satisfies this slot.
-
----
-
-## 13. Limitations
-
-**Mandatory.** At least:
-
-- What the work does not establish.
-- Important assumptions.
-- External validity, data, or model limits.
-- What would change the conclusion (a falsification condition), where appropriate.
-
----
-
-## 14. Reproducibility
-
-Mandatory for analytical and technical projects.
-
-```markdown
-## Reproduce
-```bash
-...
-```
-```
-
-Prefer: clone → install → test → run → reproduce artifact.
-
-Where applicable: Python version, package manager, lockfile, seed, environment variables, data acquisition, pipeline command, expected artifact.
-
-Libraries use `Installation` + `Quick start` for this slot.
-
----
-
-## 15. Repository structure
-
-For anything beyond a trivial project, show the meaningful structure and the responsibility of major directories. Do not dump every file.
-
----
-
-## 16. Technical stack
-
-A concise table. Explain why a technology exists where that is useful. Do not turn this into a keyword dump. Omit for tiny libraries if the install line already names the runtime.
-
----
-
-## 17. Decision / practical implication
-
-For decision-oriented projects, distinguish:
-
-**Evidence → interpretation → decision rule → action**
-
----
-
-## 18. What I would do with production data
-
-Mandatory for portfolio projects based on public, synthetic, reconstructed, proxy, or demonstration data.
-
-Answers: "Interesting. But what would happen if this were a real client?"
-
----
-
-## 19. Status
-
-```markdown
-## Status
-**Status:** ...
-```
-
-Controlled vocabulary (case-insensitive match):
-
-- `Prototype`
-- `Foundation`
-- `In development`
-- `Functional`
-- `Complete`
-- `Maintained`
-- `Archived`
-
-Optional: `Last validated: YYYY-MM-DD`.
-
-`Active` in metadata badges is accepted as an alias of `Maintained` or `In development` only when the `## Status` section also uses a vocabulary term. Prefer the vocabulary term in the Status section itself.
-
----
-
-## 20. License
-
-Every public project: a `## License` section, or a concise license statement at the bottom, naming the license.
-
----
-
-## 21. Author
-
-Same structure everywhere. No project-specific improvisation.
-
-```html
-<table>
-  <tr>
-    <td>
-      <strong>Rafael Braga-Kribitz</strong><br />
-      Seiersberg-Pirka, Austria · Portfolio project, 2026<br />
-      <a href="https://www.linkedin.com/in/rafaelbragakribitz/">LinkedIn</a>
-      ·
-      <a href="mailto:rafaelbragakribitz@gmail.com">rafaelbragakribitz@gmail.com</a>
-    </td>
-  </tr>
-</table>
-```
-
-A text block with the same fields is acceptable. Required strings: `Rafael Braga-Kribitz`, `Austria`, `2026`, and the LinkedIn URL above.
-
----
-
-## Tiers
-
-### Tier A — Universal (every public portfolio project)
-
-- [ ] Project name (H1)
-- [ ] Hero visual
-- [ ] One-line problem / purpose
-- [ ] Status (controlled vocabulary)
-- [ ] Primary evidence
-- [ ] How to reproduce / use
-- [ ] Repository structure or architecture
-- [ ] Limitations / scope
-- [ ] License
-- [ ] Author
-
-### Tier B — Analytical / DS (if the project analyzes data)
-
-- [ ] Decision / question
-- [ ] Data provenance
-- [ ] Real vs modeled / synthetic distinction (epistemic tags)
-- [ ] Method
-- [ ] Validation
-- [ ] Results, or explicit "no results yet"
-- [ ] Uncertainty where applicable
-- [ ] Assumptions
-- [ ] Limitations
-- [ ] Reproducibility
-- [ ] Production-data implications (unless the project uses the client's production data)
-
-### Tier C — Interactive / application (if `interactive: true`)
-
-- [ ] Screenshot
-- [ ] GIF or short video (if an interface exists that motion helps)
-- [ ] Live demo if available
-- [ ] Quick-start instructions
-- [ ] User workflow
-- [ ] Technical architecture
-- [ ] Example interaction
-
----
-
-## Standardized order
-
-Identical across the portfolio. **Omit a section when genuinely irrelevant.**
+| `analytical` | Data analysis, modelling, forecasting, experimentation, decision analysis |
+| `application` | Interactive application, dashboard, API, simulator with a UI |
+| `library` | Installable package with a public API |
+| `framework` | Governance kit, agent overlay, skill pack, methodology tooling |
+| `docs` | Documentation-only or meta repository |
+
+Flags: `interactive` (adds Tier C), `incomplete` (Foundation rules: results-bearing checks become
+not-applicable, an explicit "no results yet" statement becomes required), `public_data: false`,
+`estimation: none`, `demo: static` + `demo_reason`, `hosted_urls`, `hero`, `license`,
+`license_blocked_reason`, `max_lines` + `max_lines_reason`.
+
+## 2. Requirements
+
+Ids are stable and never renamed. Severity `required` = minimum standard; `recommended` = excellence.
+
+### Identity (first screen)
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `identity.h1` | Human-readable H1 at the top (no underscore slugs) | all | required | yes (registry title) |
+| `identity.hero` | An image before the first H2 whose file resolves | all | required | yes (design-system banner or the declared chart) |
+| `identity.badges` | Badge row: CI when a workflow exists, runtime, license (must match the LICENSE file), status | all | required | yes |
+| `identity.problem` | First prose paragraph states the problem, for whom, in 12–110 words; analytical projects pose a question or name a decision; never opens with "This is a…", "Python port of…", "A reusable…" | all | required | manual |
+| `identity.status_line` | `**Status:** <term>` before the first H2, equal to the registry status | all | required | yes |
+
+Controlled status vocabulary: `Prototype` · `Foundation` · `In development` · `Functional` · `Complete` · `Maintained` · `Archived`.
+
+### Executive answer and evidence
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `executive.summary` | First H2 is one of *Decision summary / Decision / Key findings / What it does / The idea / Project status* with ≥ 20 words of prose | all | required | manual |
+| `evidence.primary` | analytical: a result chart or table in the first 150 lines · library: a code example · framework: architecture/workflow · application: a screenshot · incomplete: architecture + status | all | required | assisted |
+| `evidence.see_it_running` | *See it running* section (screenshot, capture, or hosted link) appears before the install/reproduce section | interactive | required | manual |
+| `evidence.demo_motion` | GIF or video; `NOT_APPLICABLE` with `demo: static` and a reason | interactive | recommended | manual |
+| `evidence.live_demo` | Declared hosted URLs present, or a statement that none exists | interactive | recommended | manual |
+
+Evidence hierarchy the README must respect: **source data / repository evidence → reproducible computation → generated artifact → documented interpretation → claim.** A claim never outruns its evidence; numbers come from generated artifacts (an SSOT table, a report file, a digest script) and say so.
+
+### Navigation
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `navigation.audience` | *Explore this project* table with ≥ 2 rows (fast path / deep path at minimum; Recruiter / Hiring manager / Technical reviewer / Auditor for case studies), every row linking to a section or file | all | required | links only |
+
+### Analytical (Tier B)
+
+| Id | Requirement | Severity | Notes |
+|---|---|---|---|
+| `analytical.decision` | Decision, findings, or question stated | required | |
+| `analytical.results` | Results / Key findings / Decision section; incomplete projects state that results do not exist | required | |
+| `analytical.quantitative` | Numbers with units and a comparator in the results | required | NA when incomplete |
+| `analytical.uncertainty` | Interval, percentile, coverage, or probability next to estimates | required | NA when incomplete or `estimation: none` |
+| `analytical.data` | Data section naming source, period, and grain (H2 or H3) | required | |
+| `analytical.epistemic` | Tags `VERIFIED` / `CALIBRATED` / `SIMULATED` / `ILLUSTRATIVE` applied, with the legend table | required | legend auto-inserted when tags exist |
+| `analytical.method` | Method: input → transformation → model → validation → decision | required | |
+| `analytical.validation` | Holdout, known truth, baseline, backtest, labelled audit, or acceptance/self-test named | required | also for libraries and frameworks |
+| `analytical.production_data` | What changes with production data | required | NA when incomplete or `public_data: false` |
+
+### Technical
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `technical.architecture` | Inline diagram: Mermaid, ASCII, or an image under *Architecture* | analytical, application, framework | required | assisted |
+| `technical.structure` | Repository structure naming ≥ 3 real paths (checked on disk) | all | required | yes (names and counts only) |
+| `technical.reproduce` | Reproduce / Quick start / Install with a command block; every `make`/`just` target and script referenced exists | all | required | manual |
+| `technical.stack` | Stack table with reasons | all | recommended | assisted |
+
+### Library and framework
+
+| Id | Requirement | Applies to | Severity |
+|---|---|---|---|
+| `library.example` | Minimal working example that runs as pasted | library, framework | required |
+| `library.contract` | What it enforces / acceptance test / gate table | library, framework | required |
+| `library.api` | API or command reference with parameters | library | required |
+| `library.install_pin` | Version pin in the install line or a release model | library, framework | recommended |
+
+### Honesty
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `honesty.limitations` | Limitations / Known limits / Scope with ≥ 2 items | all | required | manual |
+| `honesty.falsification` | At least one "reconsider if …" condition | analytical | recommended | manual |
+| `honesty.placeholders` | No `TBD`, `TODO`, `Coming soon`, `{{ }}`, template markers | all | required | manual |
+| `honesty.hype` | No superlatives without a number in the same sentence (state-of-the-art, production-ready, seamless, …) | all | required | manual |
+| `honesty.status_section` | `## Status` with the vocabulary term and a date, version, or milestone | all | required | yes |
+| `honesty.no_results_statement` | Incomplete projects say what does not exist yet | incomplete | required | manual |
+
+### Links and metadata
+
+| Id | Requirement | Severity | Auto-fix |
+|---|---|---|---|
+| `links.images` | Every relative image resolves on disk | required | unique-basename repair |
+| `links.internal` | Every relative link and `#anchor` resolves | required | unique-basename repair |
+| `meta.license_file` | LICENSE file present (see [`LICENSE_POLICY.md`](LICENSE_POLICY.md)); `BLOCKED_HUMAN` when ownership is unclear | required | policy-driven |
+| `meta.license_section` | `## License` names the same license as the file, or states truthfully that none exists | required | yes |
+| `meta.author` | Canonical author block ([`../blocks/author.md`](../blocks/author.md)) | required | yes |
+| `meta.length` | ≤ 450 lines (`max_lines` override needs a reason) | required | manual |
+
+### Excellence (never required)
+
+`excellence.audience_personas` (four-persona table) · `excellence.claim_tracing` (`<!-- claim: -->`
+comments, an SSOT reference, or a digest script) · `excellence.why` (*Why this project* / *What
+surprised me*) · `excellence.project_specific` (sections outside the standard vocabulary, always kept).
+
+## 3. Visual identity system
+
+Every project has the same visual **slots**, not the same image. The hero uses the Braga-Kribitz
+design system: surface `#E6E6E6`, ink `#282828`, Söhne 800 display / Söhne Mono labels, one orange
+`#FA6400` element (the status dot), 1 px hairlines, 8 px grid, no photography, gradients, or decoration.
+`readme_quality/hero.py` generates a banner from registry and repository facts only, with layout
+guardrails (wrap-and-shrink, line-length caps, no overlap, safe area, per-glyph font coverage, contrast
+≥ 4.5, post-render pixel scan).
+
+| Slot | Requirement | Acceptable evidence |
+|---|---|---|
+| Hero | always | design-system banner, primary result chart, interface screenshot, rendered library output |
+| Primary result | analytical | chart or table |
+| Interface | interactive | screenshot before installation |
+| Motion | interactive, recommended | GIF ≤ 30 s or video; `demo: static` with a reason when motion adds nothing |
+| Architecture | analytical, application, framework | Mermaid, ASCII, or image |
+| Supporting charts | where they carry evidence | with tag and source |
+
+Demonstration slot by project kind: interactive application → GIF / video / screenshots · dashboard →
+screenshot / video / live link · CLI → terminal capture or example output · library → runnable example
+and rendered output · analytical → primary visualization, report, dashboard · framework → architecture,
+workflow, runnable example.
+
+## 4. Standardized order
+
+Omit a section when genuinely irrelevant; never fill it with boilerplate.
 
 ```text
 # PROJECT NAME
 [HERO]
-[STATUS / BADGES]
-ONE-LINE PROBLEM
-## Decision / What it does / The idea / Project status
-## See it running
+[BADGES]  **Status:** …
+Problem statement (≤ 2 sentences)
+## Decision summary | What it does | The idea | Project status
+## See it running                 (interactive)
 ## Explore this project
-## Results
-## Method
-## Data
+## Results                        (analytical)
+## Method                         (analytical)   | ## Quick start / Minimal example (library)
+## Data + tag legend              (analytical)   | ## What it enforces               (library, framework)
 ## Validation
 ## Architecture
-## Reproduce
+## Reproduce / Install
 ## Limitations
-## What I would do differently / Production version
+## What I would do with production data   (analytical on public or synthetic data)
 ## Repository structure
+## Stack                          (recommended)
 ## Status
 ## License
 ## Author
 ```
 
----
+## 5. Reusable blocks
 
-## Visual identity system
+[`../blocks/`](../blocks/): `author.md`, `license.md`, `license-none.md`, `status.md`, `structure.md`,
+`epistemic-legend.md`, `audience.md`, `audience-tool.md`, `reproduce.md`, `limitations.md`,
+`production-data.md`, `provenance.md`, `badges.md`, and canonical license texts under `licenses/`.
+Blocks use `$variable` placeholders filled from the registry or repository facts; none contains a claim.
 
-Every public project has the same visual **slots**, not the same banner.
+## 6. Versioning
 
-| Slot | Requirement |
-| --- | --- |
-| Hero | Always |
-| Primary result | Analytical projects |
-| Interface screenshot | Interactive projects |
-| GIF / video | Interactive projects with a UI worth demonstrating |
-| Architecture | Non-trivial technical projects |
-| Supporting charts | Where they communicate evidence |
+`manifest/requirements.yaml` carries the version. Adding, removing, or changing a check bumps it.
+Retired ids stay in the file with `retired: true`. Every version change re-audits the portfolio.
 
----
+## 7. Out of scope
 
-## Quality contract (machine-checkable)
-
-```text
-README QUALITY CONTRACT
-IDENTITY
-  H1 title
-  hero asset
-PROBLEM
-  problem statement
-  intended user / decision
-EVIDENCE
-  primary evidence
-  quantitative result OR functional demonstration OR honest "no results yet"
-REPRODUCTION
-  installation / use instructions
-  reproducibility information where applicable
-TECHNICAL
-  architecture for non-trivial projects
-  repository structure
-ANALYTICAL
-  data provenance
-  epistemic status
-  methodology
-  validation
-  limitations
-PORTFOLIO
-  audience path
-  production implications where applicable
-  status
-  author
-  license
-```
-
-Run:
-
-```bash
-python tools/readme_audit.py --all
-# or, if portfolio checkouts live elsewhere:
-BRAGA_REPOS_ROOT=~/code python tools/readme_audit.py --all
-```
-
-There is no "better README." There is only a project that satisfies this contract more completely or less completely.
-
----
-
-## Out of scope for v1.0
-
-- Private repositories (including `braga-design-system-template`).
-- Vendoring this checker into `governance-bootstrap`.
-- Per-repo CI `make readme-audit` on consumers.
+Private repositories. Prose quality beyond the structural and honesty checks. Automatic generation of
+results, methods, or limitations prose (an agent writes those from repository evidence; see the agent
+guide).

@@ -1,0 +1,453 @@
+# BRAGA README Quality Standard — machine-readable contract
+# Version is bumped whenever a requirement is added, removed, or its check changes.
+#
+# Fields per requirement
+#   id               stable dotted identifier (never renamed; retire with `retired: true`)
+#   title            short human label
+#   applies_to       list of project types or the word `all`; `interactive`, `incomplete`,
+#                    `public_data` are registry flags that also gate applicability
+#   severity         required | recommended   (recommended failures are WARN, never FAIL)
+#   check            name of the check function in readme_quality/checks.py
+#   evidence         what the check looks for (human explanation)
+#   remediation      auto | assisted | manual
+#                      auto     = readme_quality.fix can apply it from repository evidence
+#                      assisted = fix can insert a scaffold that still needs project prose
+#                      manual   = an agent or human must write it; never auto-filled
+#   human_escalation condition under which the status becomes BLOCKED_HUMAN (null = never)
+#   excellence       true when satisfying it counts toward PASS_WITH_EXCELLENCE only
+#
+# Status vocabulary produced by the gate for every requirement:
+#   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
+
+version: "1.1.0"
+standard: docs/README_STANDARD.md
+max_readme_lines: 450
+
+project_types:
+  analytical:   "Data analysis, modelling, forecasting, experimentation, decision analysis"
+  application:  "Interactive application, dashboard, API, simulator with a UI"
+  library:      "Installable package with a public API"
+  framework:    "Governance kit, agent overlay, skill pack, methodology tooling"
+  docs:         "Documentation-only or meta repository"
+
+status_vocabulary: [Prototype, Foundation, In development, Functional, Complete, Maintained, Archived]
+
+epistemic_tags: [VERIFIED, CALIBRATED, SIMULATED, ILLUSTRATIVE]
+
+requirements:
+
+  # ------------------------------------------------------------------ identity
+  - id: identity.h1
+    title: Human-readable H1 title at the top
+    applies_to: [all]
+    severity: required
+    check: h1_title
+    evidence: "First heading is an H1 within the first 5 lines; not a bare repo slug"
+    remediation: auto
+    human_escalation: null
+
+  - id: identity.hero
+    title: Hero visual in the identity zone
+    applies_to: [all]
+    severity: required
+    check: hero_visual
+    evidence: "An image (md or <img>/<picture>) before the first H2 whose file resolves in the repo"
+    remediation: auto
+    human_escalation: null
+    notes: "Auto remediation generates a design-system banner from registry metadata; an existing chart or screenshot is preferred when one is declared as `hero:` in the registry."
+
+  - id: identity.badges
+    title: Badge row with status, license, and CI where a workflow exists
+    applies_to: [all]
+    severity: required
+    check: badge_row
+    evidence: "shields.io or actions badge markup before the first H2; CI badge required when .github/workflows/ci.yml exists; license badge must name the LICENSE file's license"
+    remediation: auto
+    human_escalation: null
+
+  - id: identity.problem
+    title: Problem statement in the first paragraph
+    applies_to: [all]
+    severity: required
+    check: problem_statement
+    evidence: "First prose paragraph after H1 is 20-80 words, does not open with 'This is a', 'This repository', 'Python port of', 'A reusable'; for analytical projects it is a question or names a decision"
+    remediation: manual
+    human_escalation: null
+
+  - id: identity.status_line
+    title: Status line in the identity zone using the controlled vocabulary
+    applies_to: [all]
+    severity: required
+    check: status_line
+    evidence: "`**Status:** <vocab>` before the first H2, matching registry `status`"
+    remediation: auto
+    human_escalation: "registry has no `status` for the project"
+
+  # ------------------------------------------------------------------ executive
+  - id: executive.summary
+    title: Executive answer within the first screenful
+    applies_to: [all]
+    severity: required
+    check: executive_summary
+    evidence: "First H2 is one of: Decision summary / Decision / What it does / The idea / Project status / What this is; its first paragraph is prose, not a list of links"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ evidence
+  - id: evidence.primary
+    title: Primary evidence appropriate to the project type
+    applies_to: [all]
+    severity: required
+    check: primary_evidence
+    evidence: "analytical: a result chart or result table in the first 120 lines; library: a code example; framework: architecture or workflow diagram; application: screenshot; incomplete: architecture + explicit status"
+    remediation: assisted
+    human_escalation: null
+
+  - id: evidence.see_it_running
+    title: Interface shown before installation instructions
+    applies_to: [interactive]
+    severity: required
+    check: see_it_running
+    evidence: "A screenshot, GIF, terminal capture, or hosted-report link appears before the first install/quick-start code block"
+    remediation: manual
+    human_escalation: "the interface needs credentials, private data, or a paid service to run"
+
+  - id: evidence.demo_motion
+    title: GIF or video for interfaces where motion helps
+    applies_to: [interactive]
+    severity: recommended
+    check: demo_motion
+    evidence: "A .gif/.mp4/.webm reference or video link; NOT_APPLICABLE when registry `demo: static` is set with a reason"
+    remediation: manual
+    human_escalation: null
+
+  - id: evidence.live_demo
+    title: Live demo link verified or its absence stated
+    applies_to: [interactive]
+    severity: recommended
+    check: live_demo
+    evidence: "A hosted URL declared in the registry appears in the README; or the README states no hosted demo exists"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ navigation
+  - id: navigation.audience
+    title: Audience paths with at least two depths
+    applies_to: [all]
+    severity: required
+    check: audience_paths
+    evidence: "An 'Explore this project' / 'Start here' table or list with >= 2 rows linking to in-repo targets"
+    remediation: assisted
+    human_escalation: null
+
+  # ------------------------------------------------------------------ analytical
+  - id: analytical.decision
+    title: Decision or question stated
+    applies_to: [analytical]
+    severity: required
+    check: decision_stated
+    evidence: "A 'Decision', 'Decision summary', 'Key findings', 'Research questions' or 'Verified anchors' section, or a question in the identity zone"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.results
+    title: Results section, or explicit no-results statement for incomplete projects
+    applies_to: [analytical]
+    severity: required
+    check: results_section
+    evidence: "Results/Key findings/Decision heading with quantitative content; incomplete projects: a sentence saying results do not exist yet"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.quantitative
+    title: Results are quantitative with a comparator
+    applies_to: [analytical]
+    severity: required
+    check: quantitative_results
+    evidence: "Numbers with units (%, pp, EUR, MAPE, n=) in the results section; NOT_APPLICABLE for incomplete projects"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.uncertainty
+    title: Uncertainty reported for estimated quantities
+    applies_to: [analytical]
+    severity: required
+    check: uncertainty_reported
+    evidence: "interval / credible / confidence / percentile / sigma / probability wording near the numbers; NOT_APPLICABLE for incomplete projects or registry `estimation: none`"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.data
+    title: Data provenance (source, period, grain, public/private)
+    applies_to: [analytical]
+    severity: required
+    check: data_provenance
+    evidence: "A Data / Data sources / Sources heading with at least one source and a period or date"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.epistemic
+    title: Epistemic tags on artifacts (VERIFIED / CALIBRATED / SIMULATED / ILLUSTRATIVE)
+    applies_to: [analytical]
+    severity: required
+    check: epistemic_tags
+    evidence: "At least one tag used in a table or legend; the legend block explains the tags"
+    remediation: assisted
+    human_escalation: null
+
+  - id: analytical.method
+    title: Method chain (input -> transformation -> model -> validation -> output)
+    applies_to: [analytical]
+    severity: required
+    check: method_section
+    evidence: "Method / Methodology / How it works / Pipeline heading"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.validation
+    title: Validation mechanism named
+    applies_to: [analytical, library, framework]
+    severity: required
+    check: validation_section
+    evidence: "holdout, known truth, baseline, backtest, cross-validation, precision audit, acceptance test, self-test, or a test command; incomplete analytical projects may state the planned mechanism"
+    remediation: manual
+    human_escalation: null
+
+  - id: analytical.production_data
+    title: What changes with production data
+    applies_to: [analytical]
+    severity: required
+    check: production_data
+    evidence: "A section on production data / what I would do differently / maintenance roadmap; NOT_APPLICABLE when registry `public_data: false`"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ technical
+  - id: technical.architecture
+    title: Architecture diagram inline
+    applies_to: [analytical, application, framework]
+    severity: required
+    check: architecture_inline
+    evidence: "```mermaid block, ASCII box diagram, or an architecture image under an Architecture heading"
+    remediation: assisted
+    human_escalation: null
+    notes: "Assisted remediation drafts a Mermaid diagram from the top-level package layout; it must be reviewed."
+
+  - id: technical.structure
+    title: Repository structure with responsibilities
+    applies_to: [all]
+    severity: required
+    check: repo_structure
+    evidence: "Repository structure / Repository map / Modules / What's inside heading with a tree or table naming >= 3 real top-level paths"
+    remediation: auto
+    human_escalation: null
+    notes: "Auto remediation lists real top-level paths and file counts only; it never invents responsibilities."
+
+  - id: technical.reproduce
+    title: Reproduce / install / quick start with runnable commands
+    applies_to: [all]
+    severity: required
+    check: reproduce_section
+    evidence: "Reproduce / Quick start / Install / Usage heading followed by a shell or python code block; commands reference files that exist (Makefile targets, scripts, pyproject)"
+    remediation: manual
+    human_escalation: null
+
+  - id: technical.stack
+    title: Stack table with reasons
+    applies_to: [all]
+    severity: recommended
+    check: stack_table
+    evidence: "A Stack / Technology heading with a table"
+    remediation: assisted
+    human_escalation: null
+
+  # ------------------------------------------------------------------ library
+  - id: library.example
+    title: Minimal working example
+    applies_to: [library, framework]
+    severity: required
+    check: minimal_example
+    evidence: "A python/yaml/bash code block under Quick start / Minimal example / Usage"
+    remediation: manual
+    human_escalation: null
+
+  - id: library.contract
+    title: Behavioural contract or acceptance test
+    applies_to: [library, framework]
+    severity: required
+    check: behavioural_contract
+    evidence: "What it enforces / Acceptance test / gate table / guarantees section"
+    remediation: manual
+    human_escalation: null
+
+  - id: library.api
+    title: API or command reference for the public surface
+    applies_to: [library]
+    severity: required
+    check: api_reference
+    evidence: "API reference / Reference / Commands heading with parameter tables or signatures"
+    remediation: manual
+    human_escalation: null
+
+  - id: library.install_pin
+    title: Install line with a version pin or release model
+    applies_to: [library, framework]
+    severity: recommended
+    check: install_pin
+    evidence: "@vX.Y.Z, ==X.Y, or a Releases section"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ honesty
+  - id: honesty.limitations
+    title: Limitations / scope section in the README
+    applies_to: [all]
+    severity: required
+    check: limitations_section
+    evidence: "Limitations / Known limits / Scope / Caveats heading with >= 2 bullets or sentences"
+    remediation: manual
+    human_escalation: null
+
+  - id: honesty.falsification
+    title: At least one falsification condition
+    applies_to: [analytical]
+    severity: recommended
+    check: falsification_condition
+    evidence: "'reconsider if', 'would change this', 'revisit under', 'falsif' wording"
+    remediation: manual
+    human_escalation: null
+
+  - id: honesty.placeholders
+    title: No placeholders or template residue
+    applies_to: [all]
+    severity: required
+    check: no_placeholders
+    evidence: "No TBD / TODO / Coming soon / lorem / <placeholder> / {{ }} / TEMPLATE: markers"
+    remediation: manual
+    human_escalation: null
+
+  - id: honesty.hype
+    title: No unsupported superlatives
+    applies_to: [all]
+    severity: required
+    check: no_hype
+    evidence: "No 'state-of-the-art', 'production-ready', 'blazing', 'seamless', 'cutting-edge', 'revolutionary', 'best-in-class', 'highly accurate' without a number in the same sentence"
+    remediation: manual
+    human_escalation: null
+
+  - id: honesty.status_section
+    title: Status section stating what exists and what does not
+    applies_to: [all]
+    severity: required
+    check: status_section
+    evidence: "## Status heading with the vocabulary term and a date or milestone"
+    remediation: auto
+    human_escalation: "registry has no `status`"
+
+  - id: honesty.no_results_statement
+    title: Incomplete projects say results do not exist
+    applies_to: [incomplete]
+    severity: required
+    check: no_results_statement
+    evidence: "Sentence such as 'no results exist yet' / 'results land at M7' / 'what does not exist'"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ links
+  - id: links.images
+    title: Every image reference resolves
+    applies_to: [all]
+    severity: required
+    check: images_resolve
+    evidence: "Relative image paths exist on disk; absolute URLs are not checked offline"
+    remediation: auto
+    human_escalation: null
+    notes: "Auto remediation repairs case and moved-file mismatches when the basename is unique in the repo."
+
+  - id: links.internal
+    title: Every relative link resolves
+    applies_to: [all]
+    severity: required
+    check: links_resolve
+    evidence: "Relative links (files and #anchors) exist; anchors are matched against README headings"
+    remediation: auto
+    human_escalation: null
+
+  # ------------------------------------------------------------------ meta
+  - id: meta.license_file
+    title: LICENSE file present
+    applies_to: [all]
+    severity: required
+    check: license_file
+    evidence: "LICENSE or LICENSE.md at repo root"
+    remediation: auto
+    human_escalation: "repo contains third-party code with an incompatible license, or ownership is unclear"
+    notes: "Auto remediation follows docs/LICENSE_POLICY.md; never changes an existing license."
+
+  - id: meta.license_section
+    title: License section matches the LICENSE file
+    applies_to: [all]
+    severity: required
+    check: license_section
+    evidence: "## License heading naming the same license as the LICENSE file"
+    remediation: auto
+    human_escalation: null
+
+  - id: meta.author
+    title: Canonical author block
+    applies_to: [all]
+    severity: required
+    check: author_block
+    evidence: "Name, 'Austria', year, and the LinkedIn URL from the registry; the block text matches blocks/author.md"
+    remediation: auto
+    human_escalation: null
+
+  - id: meta.length
+    title: README is an executive interface, not a dump
+    applies_to: [all]
+    severity: required
+    check: readme_length
+    evidence: "<= max_readme_lines lines (registry `max_lines` may raise the limit with a `max_lines_reason`)"
+    remediation: manual
+    human_escalation: null
+
+  # ------------------------------------------------------------------ excellence (never required)
+  - id: excellence.audience_personas
+    title: Four-persona audience table
+    applies_to: [analytical]
+    severity: recommended
+    check: audience_personas
+    evidence: "Recruiter / Hiring manager / Technical reviewer / Auditor rows"
+    remediation: manual
+    human_escalation: null
+    excellence: true
+
+  - id: excellence.claim_tracing
+    title: Claims traced to artifacts
+    applies_to: [analytical]
+    severity: recommended
+    check: claim_tracing
+    evidence: "<!-- claim: --> comments, a NUMERIC_SSOT reference, or a digest script mentioned"
+    remediation: manual
+    human_escalation: null
+    excellence: true
+
+  - id: excellence.why
+    title: Why this project / what surprised me
+    applies_to: [analytical]
+    severity: recommended
+    check: why_section
+    evidence: "Why this project / What surprised me heading"
+    remediation: manual
+    human_escalation: null
+    excellence: true
+
+  - id: excellence.project_specific
+    title: Project-specific sections preserved
+    applies_to: [all]
+    severity: recommended
+    check: project_specific_sections
+    evidence: "H2 sections outside the standard vocabulary are reported as project_specific_excellence, never as failures"
+    remediation: manual
+    human_escalation: null
+    excellence: true

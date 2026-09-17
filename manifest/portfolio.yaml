@@ -1,0 +1,170 @@
+# BRAGA public-portfolio registry — declared, human-owned facts per project.
+#
+# The gate never infers type or status from prose. Everything declared here must be true
+# of the repository; the fixer copies these values into badges, status lines, and the hero.
+#
+# repos_root: folder that contains the checkouts (override with BRAGA_REPOS_ROOT or --repos-root).
+# Default when unset: the parent folder of this repository's checkout.
+repos_root: null
+
+author:
+  name: Rafael Braga-Kribitz
+  location: Austria
+  place: Seiersberg-Pirka, Austria
+  year: "2026"
+  linkedin: https://www.linkedin.com/in/rafaelbragakribitz/
+  email: rafaelbragakribitz@gmail.com
+  github: RafaelBraga-Kribitz
+
+status_vocabulary: [Prototype, Foundation, In development, Functional, Complete, Maintained, Archived]
+
+# Fields (see readme_quality/registry.py for defaults):
+#   type: analytical | application | library | framework | docs
+#   status: vocabulary term (required for the status checks to be auto-fixable)
+#   title / descriptor: used by the hero generator and the H1 fix; must be factual
+#   hero: "generated" or a repo-relative path to an existing chart / screenshot
+#   hero_path: where the generated banner is written
+#   demo: motion | static  (static requires demo_reason)  — interactive projects only
+#   hosted_urls: verified live URLs that must appear in the README
+#   license: override for the license policy; license_blocked_reason: escalate instead of creating a file
+#   public_data: false => production-data section not required
+#   estimation: none => uncertainty check not applicable
+
+projects:
+  - name: decision-analytics-reconstruction
+    github: RafaelBraga-Kribitz/decision-analytics-reconstruction
+    path: decision-analytics-reconstruction
+    type: analytical
+    interactive: true
+    status: Functional
+    title: "Decision Analytics Reconstruction — Paraguay 2018 Presidential Election"
+    descriptor: "Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one election from public anchors and synthetic voters."
+    hero: reports/eda/C1_forecast_timeline.png
+    demo: static
+    demo_reason: "two app screenshots and a hosted Module C report are in the README; a GIF would need a full pipeline run plus both apps running"
+    hosted_urls:
+      - https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/
+
+  - name: warehouse_humanoid_tco
+    github: RafaelBraga-Kribitz/warehouse_humanoid_tco
+    path: warehouse_humanoid_tco
+    type: analytical
+    interactive: true
+    status: Complete
+    title: "Warehouse Humanoid TCO"
+    descriptor: "When do humanoid robots beat human labour in warehouse economics? Discrete-event simulation and Monte Carlo TCO on 2,359 robot episodes."
+    hero: docs/assets/hero-banner-v2.png
+    hosted_urls:
+      - https://public.tableau.com/app/profile/rafael.braga.kribitz/viz/HumanoidRoboticsTCO/Dashboard1
+
+  - name: austrian-mmm-budget-optimizer
+    github: RafaelBraga-Kribitz/austrian-mmm-budget-optimizer
+    path: austrian-mmm-budget-optimizer
+    type: analytical
+    status: Complete
+    title: "Austrian MMM and Budget Optimizer"
+    descriptor: "Bayesian marketing-mix model validated on known truth, demonstrated on public data, with a breakeven-gated budget reallocation rule."
+    hero: reports/layer_r/channel_contributions.png
+
+  - name: austria-data-job-market-intelligence
+    github: RafaelBraga-Kribitz/austria-data-job-market-intelligence
+    path: austria-data-job-market-intelligence
+    type: analytical
+    status: Complete
+    title: "Austria Data-Job Market Intelligence"
+    descriptor: "One-day snapshot of 720 core data-role postings from five public sources, the AMS JobBarometer 2020–2025, and Eurostat vacancy seasonality."
+    hero: outputs/figures/F03_styria_vs_austria_families.png
+
+  - name: energy-procurement-risk-analyzer
+    github: RafaelBraga-Kribitz/energy-procurement-risk-analyzer
+    path: energy-procurement-risk-analyzer
+    type: analytical
+    incomplete: true
+    status: Foundation
+    title: "Energy Procurement Risk Analyzer"
+    descriptor: "Procurement-strategy risk on the Austrian day-ahead market for a 50 GWh Styrian consumer. Ingest and warehouse built; strategy results not yet."
+    hero: generated
+
+  - name: governance-bootstrap
+    github: RafaelBraga-Kribitz/governance-bootstrap
+    path: governance-bootstrap
+    type: framework
+    status: Maintained
+    title: "governance-bootstrap"
+    descriptor: "A vendorable governance kit: YAML findings that ratchet from open gap to CI-enforced gate, synced bidirectionally to every consumer project."
+    hero: generated
+
+  - name: gsd-dsx
+    github: RafaelBraga-Kribitz/GSD-DSX
+    path: GSD-DSX
+    type: framework
+    status: Maintained
+    title: "gsd-dsx"
+    descriptor: "Data-science rigour for the GSD agent loop: deterministic gates that block leakage, underpowered designs, and overclaimed results."
+    hero: generated
+    runtime: "Python 3.9+ · Node"
+
+  - name: funnel_correlation_py
+    github: RafaelBraga-Kribitz/funnel_correlation_py
+    path: funnel_correlation_py
+    type: library
+    status: Functional
+    title: "funnel-correlation-py"
+    descriptor: "Binarize, correlate, plot: a Python port of the R correlationfunnel package for ranking feature–target associations before modelling."
+    hero: docs/assets/funnel_example.png
+    hero_path: docs/assets/funnel_example.png
+
+  - name: bk-viz
+    github: RafaelBraga-Kribitz/bk-viz
+    path: bk-viz
+    type: library
+    status: Functional
+    title: "bk-viz"
+    descriptor: "The Braga-Kribitz design system applied to matplotlib charts, so a figure from any repository is indistinguishable from the site."
+    hero: example_light.png
+
+  - name: NextMove
+    github: RafaelBraga-Kribitz/NextMove
+    path: NextMove
+    type: application
+    interactive: false
+    incomplete: true
+    status: Foundation
+    title: "NextMove"
+    descriptor: "A headless behavioural decision engine for e-commerce next-best-action. Phase 1: reproducible simulated world, ingest, and features."
+    hero: generated
+    license_blocked_reason: "no license is declared anywhere in the repository and the charter frames NextMove as a product with a launch gate; choosing MIT vs. a restrictive license is the owner's call"
+
+  - name: metric_lineage_simulator
+    github: RafaelBraga-Kribitz/metric_lineage_simulator
+    path: metric_lineage_simulator
+    type: application
+    interactive: true
+    incomplete: true
+    status: In development
+    title: "Metric Driver-Tree Studio"
+    descriptor: "A driver-tree studio that keeps definitional identities, modelled elasticities, and untested beliefs apart. Phase 1 engine built; UI pending."
+    hero: generated
+    runtime: "TypeScript / Node 20"
+    demo: static
+    demo_reason: "the Phase 2 UI is not built; the archived Phase 0 prototype is not product SSOT, so a recording of it would misrepresent the project"
+
+  - name: Chart_Audit_Framework
+    github: RafaelBraga-Kribitz/Chart_Audit_Framework
+    path: Chart_Audit_Framework
+    type: framework
+    incomplete: true
+    status: Foundation
+    title: "Chart Audit Framework"
+    descriptor: "Skill pack and read-only ratchet that routes each chart in a target repository to skip, re-verify, or re-audit."
+    hero: generated
+    license_blocked_reason: "Deterministic_Data_Visualization_Framework/references bundles thousands of third-party images and pages (datavizproject.com and others); an MIT file would purport to license them. Decide: remove the references tree, or add a LICENSE scoped to the author's own files with a NOTICE excluding references/"
+
+  - name: braga-portfolio-docs
+    github: RafaelBraga-Kribitz/braga-portfolio-docs
+    path: braga-portfolio-docs
+    type: docs
+    status: Maintained
+    title: "BRAGA README Quality Gate"
+    descriptor: "The portfolio documentation contract, its machine-readable manifest, the gate, the fixer, and the hero generator."
+    hero: generated
