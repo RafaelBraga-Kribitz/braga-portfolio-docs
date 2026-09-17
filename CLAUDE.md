@@ -1,59 +1,39 @@
-# CLAUDE.md — Agent protocol for braga-portfolio-docs
+# CLAUDE.md — agent protocol for braga-portfolio-docs
 
-This repository is the **single source of truth** for the BRAGA Portfolio Project README Standard. Claude Code (and any other agent) must treat files here as normative for public-portfolio README work.
+This repository is the single source of truth for the BRAGA README Quality Standard. Any agent that
+touches a public portfolio README works against it.
 
 ## First action of every session
 
-1. Read [`docs/README_STANDARD.md`](docs/README_STANDARD.md).
-2. Read [`tools/portfolio.yaml`](tools/portfolio.yaml) for the target project’s declared `type`, `interactive`, `incomplete`, and `production_data_section` flags.
-3. Do not invent a parallel documentation methodology.
+1. Read [`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md) (how to run the gate, what it fixes, what it never fixes).
+2. Read [`manifest/portfolio.yaml`](manifest/portfolio.yaml) for the target project's declared `type`, `status`, `hero`, `demo`, and license facts.
+3. Read [`docs/README_STANDARD.md`](docs/README_STANDARD.md) only when a requirement's intent is unclear; `python -m readme_quality explain <id>` is faster.
 
-## When editing a project README
-
-Work in the **target project repository**, not by dumping the standard into that README.
-
-Contract:
-
-- Standardize **presentation and evidence architecture**, not intellectual content.
-- Omit sections that are genuinely irrelevant — do not fill with boilerplate.
-- README = executive interface to the repository. Push long methodology, governance, and reports into linked artifacts.
-- Reuse existing charts / screenshots / architecture diagrams for the hero. Do not manufacture decorative banners or fake GIFs.
-- Do not invent metrics, results, licenses, or “complete” claims that are not already on disk in the target repo.
-- Use the standard author block (name, Austria, 2026, LinkedIn URL from `portfolio.yaml`).
-
-## Done means the checker passes
-
-From this repository (with portfolio checkouts under `$BRAGA_REPOS_ROOT`, default `~/code`):
+## Done means the gate passes
 
 ```bash
-python tools/readme_audit.py --name <registry-name>
-# or
-python tools/readme_audit.py --repo /path/to/target/checkout
+python -m readme_quality audit --repo /path/to/project --verbose    # exit 0 = PASS
 ```
 
-Exit code 0 / `PASS` is required before claiming the README satisfies the contract.
+Exit 1 is `FAIL`; exit 2 is `BLOCKED_HUMAN` (report the reason, do not work around it).
 
-`make readme-audit` runs `--all` against the registry.
+## Rules
 
-## Anti-patterns (banned)
-
-- Inferring project type from folder names or README prose when the project is in `portfolio.yaml`.
-- Homogenizing an MMM case study and a library into the same prose shape.
-- Quoting results that do not exist yet (especially `incomplete: true` analytical projects).
-- Claiming “audited / complete / fixed” without a passing checker run.
-- Editing this standard and a project README in the same PR without an explicit request.
+- Standardize presentation and evidence architecture, not intellectual content. Preserve every existing section; reorder and reframe; delete only what is obsolete, wrong, duplicated, or misleading.
+- Never invent numbers, results, licenses, screenshots, URLs, or capabilities. Every fact in a README exists in the repository first.
+- Never write placeholders (`TBD`, `Coming soon`, `{{ }}`); the gate fails on them.
+- Set not-applicable states through the registry (`demo: static` + reason, `public_data: false`, `estimation: none`, `incomplete: true`), never with filler sections.
+- Do not weaken a check to make a repository pass. If a check is wrong, fix it here with a test, bump the manifest version, and re-audit the portfolio.
+- Do not change an existing license. Follow [`docs/LICENSE_POLICY.md`](docs/LICENSE_POLICY.md); escalate with `license_blocked_reason` when ownership is unclear.
 
 ## Where things live
 
 | You want | Read |
 |---|---|
-| The contract | `docs/README_STANDARD.md` |
-| Project types | `tools/portfolio.yaml` |
-| Checker | `tools/readme_audit.py` |
-| How humans use this repo | `README.md` |
-
-## What this file does not do
-
-- It does not summarize individual portfolio projects.
-- It does not replace each project’s own `CLAUDE.md` / governance protocol.
-- It does not authorize inventing product claims to fill README slots.
+| The contract | `docs/README_STANDARD.md`, `manifest/requirements.yaml` |
+| Project facts | `manifest/portfolio.yaml` |
+| The checks | `readme_quality/checks.py` |
+| Safe fixes | `readme_quality/fix.py`, `blocks/` |
+| Hero banner | `readme_quality/hero.py` |
+| Starting structures | `templates/` |
+| CI | `ci/readme-quality.yml` |

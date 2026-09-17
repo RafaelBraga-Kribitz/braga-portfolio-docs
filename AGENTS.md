@@ -1,9 +1,10 @@
 # Agent instructions
 
-This repository is the SSOT for the BRAGA Portfolio README Standard.
+This repository is the SSOT for the BRAGA README Quality Standard.
 
-- Human contract: [`docs/README_STANDARD.md`](docs/README_STANDARD.md)
-- Claude Code protocol: [`CLAUDE.md`](CLAUDE.md)
-- Checker: `python tools/readme_audit.py --all` (set `BRAGA_REPOS_ROOT` to the folder that contains portfolio clones)
+- Agent guide: `docs/AGENT_GUIDE.md`
+- Contract: `docs/README_STANDARD.md` + `manifest/requirements.yaml`
+- Registry: `manifest/portfolio.yaml`
+- Gate: `python -m readme_quality audit --repo <checkout>` (exit 0 = PASS)
 
-Do not invent a parallel documentation methodology. Project type comes from [`tools/portfolio.yaml`](tools/portfolio.yaml).
+Do not invent a parallel documentation methodology. Type and status come from the registry.

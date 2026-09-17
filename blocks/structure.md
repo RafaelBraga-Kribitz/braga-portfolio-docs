@@ -1,0 +1,5 @@
+## Repository structure
+
+```text
+$tree
+```

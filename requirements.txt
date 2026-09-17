@@ -1,1 +1,4 @@
 PyYAML>=6.0
+Pillow>=10.0
+fonttools>=4.40
+pytest>=7.0
