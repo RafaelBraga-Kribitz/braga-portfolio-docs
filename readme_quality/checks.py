@@ -193,7 +193,7 @@ def badge_row(ctx: CheckContext) -> Result:
     problems = []
     if not lines:
         return Result(FAIL, "no badge row in the identity zone", auto_fixable=True)
-    if facts.ci_workflow and "actions/workflows" not in ident:
+    if facts.ci_workflow and not re.search(r"actions/workflows|img\.shields\.io/github/(check-runs|actions)|/actions\)", ident):
         problems.append(f"CI workflow {facts.ci_workflow} exists but no CI badge")
     if facts.license_file:
         if not re.search(r"license|licence", ident, re.I):

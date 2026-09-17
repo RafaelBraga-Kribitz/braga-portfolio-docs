@@ -147,7 +147,7 @@ class Fixer:
         ident = rd.identity
         gh = self.project.github or ""
         new: list[str] = []
-        if facts.ci_workflow and "actions/workflows" not in ident and gh:
+        if facts.ci_workflow and not re.search(r"actions/workflows|img\.shields\.io/github/(check-runs|actions)|/actions\)", ident) and gh:
             new.append(f"[![CI](https://github.com/{gh}/actions/workflows/{facts.ci_workflow}/badge.svg)](https://github.com/{gh}/actions/workflows/{facts.ci_workflow})")
         for wf in facts.workflows:
             low = wf.lower()
