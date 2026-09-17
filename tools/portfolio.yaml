@@ -1,0 +1,114 @@
+# BRAGA public-portfolio registry for readme_audit.py
+# Type is declared here. The checker never infers it from the README.
+#
+# Override the sibling checkouts root with:
+#   export BRAGA_REPOS_ROOT=~/code
+# or:
+#   python tools/readme_audit.py --all --repos-root ~/code
+# Default when unset: ~/code
+
+repos_root: null
+
+author:
+  name: Rafael Braga-Kribitz
+  location: Austria
+  year: "2026"
+  linkedin: https://www.linkedin.com/in/rafaelbragakribitz/
+
+status_vocabulary:
+  - Prototype
+  - Foundation
+  - In development
+  - Functional
+  - Complete
+  - Maintained
+  - Archived
+
+projects:
+  - name: austrian-mmm-budget-optimizer
+    github: RafaelBraga-Kribitz/austrian-mmm-budget-optimizer
+    path: austrian-mmm-budget-optimizer
+    type: analytical
+    interactive: false
+    incomplete: false
+    production_data_section: true
+
+  - name: decision-analytics-reconstruction
+    github: RafaelBraga-Kribitz/decision-analytics-reconstruction
+    path: decision-analytics-reconstruction
+    type: analytical
+    interactive: true
+    incomplete: false
+    production_data_section: true
+
+  - name: warehouse_humanoid_tco
+    github: RafaelBraga-Kribitz/warehouse_humanoid_tco
+    path: warehouse_humanoid_tco
+    type: analytical
+    interactive: true
+    incomplete: false
+    production_data_section: true
+
+  - name: energy-procurement-risk-analyzer
+    github: RafaelBraga-Kribitz/energy-procurement-risk-analyzer
+    path: energy-procurement-risk-analyzer
+    type: analytical
+    interactive: false
+    incomplete: true
+    production_data_section: false
+
+  - name: funnel_correlation_py
+    github: RafaelBraga-Kribitz/funnel_correlation_py
+    path: funnel_correlation_py
+    type: library
+    interactive: false
+    incomplete: false
+    production_data_section: false
+
+  - name: bk-viz
+    github: RafaelBraga-Kribitz/bk-viz
+    path: bk-viz
+    type: library
+    interactive: false
+    incomplete: false
+    production_data_section: false
+
+  - name: governance-bootstrap
+    github: RafaelBraga-Kribitz/governance-bootstrap
+    path: governance-bootstrap
+    type: framework
+    interactive: false
+    incomplete: false
+    production_data_section: false
+
+  - name: gsd-dsx
+    github: RafaelBraga-Kribitz/GSD-DSX
+    path: gsd-dsx
+    type: framework
+    interactive: false
+    incomplete: false
+    production_data_section: false
+
+  - name: Chart_Audit_Framework
+    github: RafaelBraga-Kribitz/Chart_Audit_Framework
+    path: chart_audit_framework
+    type: framework
+    interactive: false
+    incomplete: true
+    production_data_section: false
+
+  - name: NextMove
+    github: RafaelBraga-Kribitz/NextMove
+    path: nextmove
+    type: application
+    interactive: false
+    incomplete: true
+    production_data_section: false
+
+  - name: metric_lineage_simulator
+    github: RafaelBraga-Kribitz/metric_lineage_simulator
+    path: metric_lineage_simulator
+    type: application
+    interactive: true
+    incomplete: true
+    production_data_section: false
