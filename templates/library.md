@@ -63,4 +63,4 @@
 
 ## Author
 
-<!-- TEMPLATE: canonical block inserted by the fixer -->
+<!-- TEMPLATE: canonical block with portrait inserted by the fixer -->

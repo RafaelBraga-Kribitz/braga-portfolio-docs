@@ -17,7 +17,7 @@ The standard says what "great" means for a README of a given project type. A mac
 
 ```text
 Standard  docs/README_STANDARD.md      what "great" means, per project type
-Manifest  manifest/requirements.yaml   44 requirement ids, severity, check, remediation, escalation
+Manifest  manifest/requirements.yaml   44 requirement ids, severity, check, remediation, escalation (v1.2.0)
 Registry  manifest/portfolio.yaml      declared type, status, hero, demo, license facts per project
 Gate      readme_quality.audit         PASS / PASS_WITH_EXCELLENCE / NOT_APPLICABLE / WARN / FAIL / BLOCKED_HUMAN
 Fixer     readme_quality.fix           safe remediation from evidence only
@@ -117,7 +117,7 @@ The gate reads the README and the repository (workflows, `pyproject.toml`, `pack
 
 **Status:** Maintained
 
-Standard v1.1, manifest v1.1.0. Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md). Repository last updated 2026-09-17 (date of the last commit).
+Standard v1.2, manifest v1.2.0. Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md). Repository last updated 2026-09-17 (date of the last commit).
 
 ## License
 
@@ -127,6 +127,13 @@ MIT. See [`LICENSE`](LICENSE).
 
 <table>
   <tr>
+    <td width="110">
+      <img
+        src="docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png"
+        alt="Rafael Braga-Kribitz"
+        width="96"
+      />
+    </td>
     <td>
       <strong>Rafael Braga-Kribitz</strong><br />
       Seiersberg-Pirka, Austria · Portfolio project, 2026<br />

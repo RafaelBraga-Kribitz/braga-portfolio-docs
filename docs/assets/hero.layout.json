@@ -5,15 +5,15 @@
   "mode": "light",
   "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
   "title_size": 112,
-  "descriptor_size": 34,
+  "descriptor_size": 36,
   "attempts": 1,
   "blocks": {
     "kind": {
       "bbox": [
         72,
         72,
-        387,
-        102
+        408,
+        104
       ],
       "lines": [
         "BRAGA · DOCUMENTATION"
@@ -22,10 +22,10 @@
     },
     "status": {
       "bbox": [
-        1378,
+        1368,
         72,
         1528,
-        102
+        104
       ],
       "lines": [
         "MAINTAINED"
@@ -36,8 +36,8 @@
       "bbox": [
         72,
         542,
-        958,
-        568
+        1032,
+        570
       ],
       "lines": [
         "LICENSE  MIT  ·  REPO  github.com/RafaelBraga-Kribitz/braga-portfolio-docs"
@@ -62,11 +62,11 @@
         72,
         384,
         1177,
-        474
+        480
       ],
       "lines": [
-        "The portfolio documentation contract, its machine-readable manifest, the",
-        "gate, the fixer, and the hero generator."
+        "The portfolio documentation contract, its machine-readable manifest,",
+        "the gate, the fixer, and the hero generator."
       ],
       "font": "Sohne-Buch.otf"
     }

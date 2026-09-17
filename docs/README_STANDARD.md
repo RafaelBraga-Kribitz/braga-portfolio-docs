@@ -1,6 +1,6 @@
-# BRAGA Portfolio README Quality Standard v1.1
+# BRAGA Portfolio README Quality Standard v1.2
 
-**Status:** Active · **Last updated:** 2026-09-17 · **Owner:** Rafael Braga-Kribitz
+**Status:** Active · **Last updated:** 2026-09-17 (v1.2: banner-first identity order, portrait in the author block, readability revision of the banner generator) · **Owner:** Rafael Braga-Kribitz
 **Machine-readable companion:** [`../manifest/requirements.yaml`](../manifest/requirements.yaml) (requirement ids, severities, checks, remediation)
 **Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md)
 
@@ -51,7 +51,7 @@ Ids are stable and never renamed. Severity `required` = minimum standard; `recom
 | Id | Requirement | Applies to | Severity | Auto-fix |
 |---|---|---|---|---|
 | `identity.h1` | Human-readable H1 at the top (no underscore slugs) | all | required | yes (registry title) |
-| `identity.hero` | An image before the first H2 whose file resolves | all | required | yes (design-system banner or the declared chart) |
+| `identity.hero` | The **vanity banner** is the first element after the H1 (generated design-system banner by default, or a declared banner such as the warehouse hero); the badge row follows; no other image, diagram, or code block precedes the badges. The primary result chart, screenshot, or Mermaid diagram comes after the status line and problem statement | all | required | yes (banner generated; identity zone reordered) |
 | `identity.badges` | Badge row: CI when a workflow exists, runtime, license (must match the LICENSE file), status | all | required | yes |
 | `identity.problem` | First prose paragraph states the problem, for whom, in 12–110 words; analytical projects pose a question or name a decision; never opens with "This is a…", "Python port of…", "A reusable…" | all | required | manual |
 | `identity.status_line` | `**Status:** <term>` before the first H2, equal to the registry status | all | required | yes |
@@ -127,7 +127,7 @@ Evidence hierarchy the README must respect: **source data / repository evidence 
 | `links.internal` | Every relative link and `#anchor` resolves | required | unique-basename repair |
 | `meta.license_file` | LICENSE file present (see [`LICENSE_POLICY.md`](LICENSE_POLICY.md)); `BLOCKED_HUMAN` when ownership is unclear | required | policy-driven |
 | `meta.license_section` | `## License` names the same license as the file, or states truthfully that none exists | required | yes |
-| `meta.author` | Canonical author block ([`../blocks/author.md`](../blocks/author.md)) | required | yes |
+| `meta.author` | Canonical author block with the portrait ([`../blocks/author.md`](../blocks/author.md); `docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png` vendored from `blocks/assets/`) | required | yes |
 | `meta.length` | ≤ 450 lines (`max_lines` override needs a reason) | required | manual |
 
 ### Excellence (never required)
@@ -147,7 +147,8 @@ guardrails (wrap-and-shrink, line-length caps, no overlap, safe area, per-glyph 
 
 | Slot | Requirement | Acceptable evidence |
 |---|---|---|
-| Hero | always | design-system banner, primary result chart, interface screenshot, rendered library output |
+| Vanity banner | always, first | generated design-system banner (`readme_quality/hero.py`) or a declared banner image |
+| Most-important-data visual | analytical, library, application | primary result chart, rendered library output, interface screenshot; placed after badges and status |
 | Primary result | analytical | chart or table |
 | Interface | interactive | screenshot before installation |
 | Motion | interactive, recommended | GIF ≤ 30 s or video; `demo: static` with a reason when motion adds nothing |
@@ -165,9 +166,11 @@ Omit a section when genuinely irrelevant; never fill it with boilerplate.
 
 ```text
 # PROJECT NAME
-[HERO]
-[BADGES]  **Status:** …
+[VANITY BANNER]                  always first: generated design-system banner or a declared banner
+[BADGES]
+**Status:** …
 Problem statement (≤ 2 sentences)
+[PRIMARY CHART / SCREENSHOT / MERMAID]   the most-important-data visual, after the identity block
 ## Decision summary | What it does | The idea | Project status
 ## See it running                 (interactive)
 ## Explore this project

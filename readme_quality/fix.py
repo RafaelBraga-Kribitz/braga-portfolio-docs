@@ -51,6 +51,82 @@ def _shield(label: str, value: str, color: str) -> str:
     return f"https://img.shields.io/badge/{enc(label)}-{enc(value)}-{color}"
 
 
+def _identity_blocks(lines: list[str]) -> list[dict]:
+    """Split the identity zone (after the H1, before the first H2) into typed blocks."""
+    from .parse import BADGE_RE, HTML_IMG_RE, MD_IMG_RE
+    blocks: list[dict] = []
+    i = 0
+    n = len(lines)
+
+    def caption_after(j: int) -> tuple[list[str], int]:
+        k = j
+        while k < n and not lines[k].strip():
+            k += 1
+        if k < n and lines[k].strip().startswith(("*", "_")) and not lines[k].strip().startswith("**"):
+            cap = []
+            while k < n and lines[k].strip():
+                cap.append(lines[k])
+                k += 1
+            if cap and cap[-1].rstrip().endswith(("*", "_", "*)", ".*")):
+                return cap, k
+        return [], j
+
+    while i < n:
+        s = lines[i].strip()
+        if not s:
+            i += 1
+            continue
+        if s.startswith("```"):
+            j = i + 1
+            while j < n and not lines[j].strip().startswith("```"):
+                j += 1
+            blocks.append({"kind": "fence", "lines": lines[i:j + 1]})
+            i = j + 1
+            continue
+        if C.STATUS_LINE_RE.match(s):
+            blocks.append({"kind": "status", "lines": [lines[i]]})
+            i += 1
+            continue
+        if BADGE_RE.search(s):
+            j = i
+            while j < n and lines[j].strip() and BADGE_RE.search(lines[j]):
+                j += 1
+            blocks.append({"kind": "badges", "lines": lines[i:j]})
+            i = j
+            continue
+        m = MD_IMG_RE.search(s)
+        if m and s.startswith("!["):
+            cap, k = caption_after(i + 1)
+            blocks.append({"kind": "image", "target": m.group(2), "lines": [lines[i]] + ([""] + cap if cap else [])})
+            i = k if cap else i + 1
+            continue
+        if s.startswith(("<p", "<picture", "<div", "<img", "<a ")):
+            j = i
+            while j < n:
+                if re.search(r"</p>|</picture>|</div>|</a>", lines[j]) or (s.startswith("<img") and lines[j].rstrip().endswith(">")):
+                    break
+                j += 1
+            j = min(j, n - 1)
+            html = "\n".join(lines[i:j + 1])
+            mm = HTML_IMG_RE.search(html)
+            cap, k = caption_after(j + 1)
+            blocks.append({"kind": "html", "target": mm.group(1) if mm else "", "lines": lines[i:j + 1] + ([""] + cap if cap else [])})
+            i = k if cap else j + 1
+            continue
+        if s.startswith("<!--") or s in ("---", "***"):
+            blocks.append({"kind": "other", "lines": [lines[i]]})
+            i += 1
+            continue
+        j = i
+        while j < n and lines[j].strip() and not lines[j].strip().startswith(("```", "![", "<p", "<picture", "<img", "[![")) and not C.STATUS_LINE_RE.match(lines[j].strip()):
+            j += 1
+        if j == i:
+            j = i + 1
+        blocks.append({"kind": "prose", "lines": lines[i:j]})
+        i = j
+    return blocks
+
+
 class Fixer:
     def __init__(self, repo_dir: Path, project: Project, registry: Registry | None, manifest, dry_run: bool = False, fonts_dir=None):
         self.repo_dir = Path(repo_dir).resolve()
@@ -102,44 +178,84 @@ class Fixer:
             return f"# {title}\n\n" + text
         return text
 
-    def fix_hero(self, text: str) -> str:
-        rd = parse(text)
-        if not rd.h1:
-            return text
-        hero_imgs = [im for im in rd.images if im.line < rd.first_h2_line]
-        if hero_imgs and all(is_external(i.target) or (resolve_relative(self.repo_dir, self.readme_path, i.target) or Path("/nonexistent")).exists() for i in hero_imgs):
-            return text
-        declared = getattr(self.project, "hero", "generated") or "generated"
-        if declared != "generated":
-            target = declared
-            if not (self.repo_dir / target).exists():
-                self.changes.append(f"identity.hero: declared hero {target} does not exist; falling back to generated banner")
-                declared = "generated"
-        if declared == "generated":
+    # ---- banner + identity order --------------------------------------------
+    def _banner_target(self) -> str:
+        return C.banner_target(self.project)
+
+    def ensure_banner_file(self) -> str:
+        """Make sure the vanity banner exists (generate it when declared as `generated`)."""
+        b = getattr(self.project, "banner", "generated") or "generated"
+        target = self._banner_target()
+        if b != "generated" and not (self.repo_dir / target).exists():
+            self.changes.append(f"identity.hero: declared banner {target} does not exist; generating the design-system banner instead")
+            target = getattr(self.project, "banner_path", "") or "docs/assets/hero.png"
+            b = "generated"
+        if b == "generated" and not (self.repo_dir / target).exists():
             from .hero import generate, spec_from_project
-            facts = self._facts()
-            spec = spec_from_project(self.project, facts)
-            target = getattr(self.project, "hero_path", "") or "docs/assets/hero.png"
+            spec = spec_from_project(self.project, self._facts())
             out = self.repo_dir / target
             if not self.dry_run:
                 rep = generate(spec, out, fonts_dir=self.fonts_dir, report_path=out.with_suffix(".layout.json"))
-                self.changes.append(f"identity.hero: generated {target} ({rep['fonts']}, title {rep['title_size']}px, {rep['attempts']} layout attempt(s), validated)")
+                self.changes.append(f"identity.hero: generated {target} ({rep['fonts']}, title {rep['title_size']}px, validated)")
             else:
                 self.changes.append(f"identity.hero: would generate {target}")
-        alt = f"{self.project.title or self.project.name} — {self.project.descriptor}".strip(" —") if self.project.descriptor else (self.project.title or self.project.name)
-        alt = alt.replace("]", ")").replace("[", "(")
-        line = f"![{alt}]({target})"
+        return target
+
+    def regenerate_banner(self) -> None:
+        """Force a fresh generated banner (used after generator changes)."""
+        if (getattr(self.project, "banner", "generated") or "generated") != "generated":
+            return
+        from .hero import generate, spec_from_project
+        target = self._banner_target()
+        out = self.repo_dir / target
+        if not self.dry_run:
+            rep = generate(spec_from_project(self.project, self._facts()), out, fonts_dir=self.fonts_dir, report_path=out.with_suffix(".layout.json"))
+            self.changes.append(f"identity.hero: regenerated {target} ({rep['fonts']}, title {rep['title_size']}px, validated)")
+
+    def fix_hero(self, text: str) -> str:
+        """Banner first, then badges, then the status line, then prose, then every other visual."""
+        rd = parse(text)
+        if not rd.h1:
+            return text
+        target = self.ensure_banner_file()
         lines = text.split("\n")
-        # drop a broken hero image line if present
-        for im in hero_imgs:
-            if not is_external(im.target) and not (resolve_relative(self.repo_dir, self.readme_path, im.target) or Path("/nonexistent")).exists():
-                if lines[im.line].strip().startswith("!["):
-                    lines[im.line] = ""
-                    self.changes.append(f"identity.hero: removed broken hero reference {im.target}")
-        insert_at = rd.h1.line + 1
-        lines[insert_at:insert_at] = ["", line]
-        self.changes.append(f"identity.hero: inserted hero image reference {target}")
-        return "\n".join(lines)
+        end = rd.first_h2_line
+        ident = lines[rd.h1.line + 1:end]
+        blocks = _identity_blocks(ident)
+        want = C._norm(target)
+        banner_block = None
+        for b in blocks:
+            if b["kind"] == "image" and C._norm(b["target"]) == want:
+                banner_block = b
+                break
+        if banner_block is None:
+            alt = f"{self.project.title or self.project.name}: {self.project.descriptor}".strip(": ") if self.project.descriptor else (self.project.title or self.project.name)
+            alt = alt.replace("]", ")").replace("[", "(")
+            banner_block = {"kind": "image", "target": target, "lines": [f"![{alt}]({target})"]}
+            self.changes.append(f"identity.hero: inserted banner reference {target}")
+        badges = [b for b in blocks if b["kind"] == "badges"]
+        status = [b for b in blocks if b["kind"] == "status"]
+        prose = [b for b in blocks if b["kind"] == "prose"]
+        visuals = [b for b in blocks if b["kind"] in ("image", "html", "fence") and b is not banner_block]
+        other = [b for b in blocks if b["kind"] == "other"]
+        kept = []
+        for b in visuals:
+            tgt = b.get("target")
+            if b["kind"] == "image" and tgt and not is_external(tgt) and not (resolve_relative(self.repo_dir, self.readme_path, tgt) or Path("/nonexistent")).exists():
+                self.changes.append(f"identity.hero: removed broken image reference {tgt}")
+                continue
+            kept.append(b)
+        order = [banner_block] + badges + status + prose + kept + other
+        out: list[str] = []
+        for b in order:
+            out.extend(b["lines"])
+            out.append("")
+        rebuilt = lines[:rd.h1.line + 1] + [""] + out + lines[end:]
+        new_text = "\n".join(rebuilt)
+        new_text = re.sub(r"\n{3,}", "\n\n", new_text)
+        if new_text != text:
+            self.changes.append("identity.hero: identity zone reordered (banner, badges, status, prose, other visuals)")
+        return new_text
 
     def fix_badges(self, text: str) -> str:
         rd = parse(text)
@@ -337,14 +453,27 @@ class Fixer:
             return self._insert_before_section(text, C.AUTHOR_ALIASES, wanted)
         return text
 
+    def ensure_portrait(self) -> str:
+        a = self.author
+        photo = getattr(a, "photo", "Author_MDS_Rafael_Braga-Kribitz_kroped.png")
+        dst = self.repo_dir / "docs" / "assets" / photo
+        if not dst.exists():
+            src = BLOCKS / "assets" / photo
+            if src.exists() and not self.dry_run:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(src.read_bytes())
+                self.changes.append(f"meta.author: vendored portrait to docs/assets/{photo}")
+        return f"docs/assets/{photo}"
+
     def fix_author(self, text: str) -> str:
         a = self.author
-        wanted = block("author", name=a.name, place=a.place, year=a.year, linkedin=a.linkedin, email=a.email)
+        photo_rel = self.ensure_portrait()
+        wanted = block("author", name=a.name, place=a.place, year=a.year, linkedin=a.linkedin, email=a.email, photo=photo_rel)
         rd = parse(text)
         secs = rd.find_sections(C.AUTHOR_ALIASES, level=2)
         if secs:
             s = secs[-1]
-            if all(x in s.body for x in (a.name, a.location, str(a.year), a.linkedin)):
+            if all(x in s.body for x in (a.name, a.location, str(a.year), a.linkedin)) and photo_rel.split("/")[-1] in s.body:
                 return text
             lines = text.split("\n")
             lines[s.start:s.end] = wanted.rstrip("\n").split("\n") + [""]

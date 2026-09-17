@@ -60,12 +60,13 @@ The gate is pass/fail on `required` requirements only. It never scores prose.
 
 ## What the fixer does automatically (and what it never does)
 
-Automatic, from repository evidence or the registry: H1 from the registry title; hero banner
-generated in the design system (or the declared chart inserted); badge row (CI / reproducibility /
+Automatic, from repository evidence or the registry: H1 from the registry title; the vanity banner
+generated in the design system (or the declared banner) placed first, with the identity zone reordered to
+banner, badges, status line, prose, then other visuals; badge row (CI / reproducibility /
 governance workflows that exist, runtime from `pyproject.toml` or `.python-version`, license from the
 `LICENSE` file, status from the registry); `**Status:**` line; `## Status` section with the last-commit
 date; `LICENSE` file per [`LICENSE_POLICY.md`](LICENSE_POLICY.md); `## License` section that matches
-the file; canonical `## Author` block; factual `## Repository structure` (names and file counts only);
+the file; canonical `## Author` block with the portrait vendored to `docs/assets/`; factual `## Repository structure` (names and file counts only);
 broken relative paths repaired when the basename is unique; audience rows linked to their sections;
 the epistemic-tag legend inserted where tags are used but unexplained.
 

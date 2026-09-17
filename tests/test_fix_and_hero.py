@@ -34,7 +34,7 @@ def test_fixer_adds_license_author_status_badges_hero(tmp_path, manifest, regist
 
 def test_fixer_never_changes_existing_license(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL.replace("MIT. See [`LICENSE`](LICENSE).", "MIT."), COMMON_FILES, license_text="Apache License, Version 2.0\n")
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     before = (repo / "LICENSE").read_text()
     rep, changes = Fixer(repo, p, registry, manifest).run()
     assert (repo / "LICENSE").read_text() == before
@@ -44,7 +44,7 @@ def test_fixer_never_changes_existing_license(tmp_path, manifest, registry):
 
 def test_fixer_blocks_instead_of_guessing_license(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL.replace("MIT. See [`LICENSE`](LICENSE).", "No license file is present in this repository."), COMMON_FILES, license_text=None)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png", license_blocked_reason="bundled third-party material")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated", license_blocked_reason="bundled third-party material")
     rep, changes = Fixer(repo, p, registry, manifest).run()
     assert not (repo / "LICENSE").exists()
     assert any("BLOCKED_HUMAN" in c for c in changes)
@@ -54,7 +54,7 @@ def test_fixer_blocks_instead_of_guessing_license(tmp_path, manifest, registry):
 def test_fixer_repairs_moved_image_path(tmp_path, manifest, registry):
     text = F.ANALYTICAL.replace("(docs/assets/hero.png)", "(img/hero.png)")
     repo = make_repo(tmp_path, "study", text, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep, changes = Fixer(repo, p, registry, manifest).run()
     assert "docs/assets/hero.png" in (repo / "README.md").read_text(encoding="utf-8")
     assert statuses(rep)["links.images"] == "PASS"
