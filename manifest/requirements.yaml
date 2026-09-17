@@ -19,7 +19,7 @@
 # Status vocabulary produced by the gate for every requirement:
 #   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
 
-version: "1.1.0"
+version: "1.2.0"
 standard: docs/README_STANDARD.md
 max_readme_lines: 450
 
@@ -47,14 +47,14 @@ requirements:
     human_escalation: null
 
   - id: identity.hero
-    title: Hero visual in the identity zone
+    title: Vanity banner first, then badges, then other visuals
     applies_to: [all]
     severity: required
     check: hero_visual
-    evidence: "An image (md or <img>/<picture>) before the first H2 whose file resolves in the repo"
+    evidence: "The first element after the H1 is the banner image declared in the registry (`banner:`; generated design-system banner by default), it resolves on disk, the badge row follows it, and no other image, diagram, or code block appears before the badges"
     remediation: auto
     human_escalation: null
-    notes: "Auto remediation generates a design-system banner from registry metadata; an existing chart or screenshot is preferred when one is declared as `hero:` in the registry."
+    notes: "Auto remediation generates the banner from registry + repository facts and reorders the identity zone: banner, badges, status line, prose, then every other visual (primary chart, screenshot, Mermaid) in its original order."
 
   - id: identity.badges
     title: Badge row with status, license, and CI where a workflow exists
@@ -398,7 +398,7 @@ requirements:
     applies_to: [all]
     severity: required
     check: author_block
-    evidence: "Name, 'Austria', year, and the LinkedIn URL from the registry; the block text matches blocks/author.md"
+    evidence: "Name, 'Austria', year, the LinkedIn URL, and the portrait <img> (docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png, vendored from blocks/assets/) as in blocks/author.md"
     remediation: auto
     human_escalation: null
 

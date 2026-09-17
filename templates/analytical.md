@@ -91,4 +91,4 @@ flowchart LR
 
 ## Author
 
-<!-- TEMPLATE: `python -m readme_quality fix` inserts the canonical block from blocks/author.md -->
+<!-- TEMPLATE: `python -m readme_quality fix` inserts the canonical block from blocks/author.md and vendors the portrait to docs/assets/ -->

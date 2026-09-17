@@ -9,7 +9,7 @@ from readme_quality.registry import Project
 from tests.conftest import PNG_1x1, make_repo, run, statuses
 from tests import fixtures as F
 
-COMMON_FILES = {"docs/assets/hero.png": PNG_1x1, "docs/assets/example.png": PNG_1x1, "run.py": "print('x')\n",
+COMMON_FILES = {"docs/assets/hero.png": PNG_1x1, "docs/assets/example.png": PNG_1x1, "docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png": PNG_1x1, "run.py": "print('x')\n",
                 "requirements.txt": "pandas\n", "data/.keep": "", "reports/.keep": "", "tests/test_x.py": "def test_x(): pass\n",
                 "ingest.py": "", "docs/SPEC.md": "# spec\n", "tinycsv.py": ""}
 
@@ -36,7 +36,7 @@ def test_minimal_readme_fails_on_many_required(tmp_path, manifest, registry):
 
 def test_analytical_readme_passes(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png", public_data=True)
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated", public_data=True)
     rep = run(repo, p, manifest, registry)
     assert rep.gate in ("PASS", "PASS_WITH_EXCELLENCE"), required_failures(rep)
     st = statuses(rep)
@@ -46,7 +46,7 @@ def test_analytical_readme_passes(tmp_path, manifest, registry):
 
 def test_library_readme_passes_and_analytical_checks_not_applied(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "tinycsv", F.LIBRARY, COMMON_FILES)
-    p = Project(name="tinycsv", path=str(repo), type="library", status="Functional", hero="docs/assets/example.png", hero_path="docs/assets/example.png")
+    p = Project(name="tinycsv", path=str(repo), type="library", status="Functional", banner="docs/assets/example.png")
     rep = run(repo, p, manifest, registry)
     assert rep.gate in ("PASS", "PASS_WITH_EXCELLENCE"), required_failures(rep)
     ids = {f.id for f in rep.findings}
@@ -56,7 +56,7 @@ def test_library_readme_passes_and_analytical_checks_not_applied(tmp_path, manif
 def test_framework_readme_passes(tmp_path, manifest, registry):
     text = F.LIBRARY.replace("# tinycsv", "# tinykit").replace("## What it does", "## The idea")
     repo = make_repo(tmp_path, "tinykit", text, COMMON_FILES)
-    p = Project(name="tinykit", path=str(repo), type="framework", status="Functional", hero="docs/assets/example.png", hero_path="docs/assets/example.png")
+    p = Project(name="tinykit", path=str(repo), type="framework", status="Functional", banner="docs/assets/example.png")
     rep = run(repo, p, manifest, registry)
     # frameworks need an inline architecture diagram; the library fixture has none
     assert "technical.architecture" in required_failures(rep)
@@ -68,7 +68,7 @@ def test_framework_readme_passes(tmp_path, manifest, registry):
 
 def test_interactive_readme_needs_see_it_running(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "app", F.ANALYTICAL, COMMON_FILES)
-    p = Project(name="app", path=str(repo), type="analytical", status="Complete", interactive=True, hero="docs/assets/hero.png", demo="static", demo_reason="static charts are the interface")
+    p = Project(name="app", path=str(repo), type="analytical", status="Complete", interactive=True, banner="generated", demo="static", demo_reason="static charts are the interface")
     rep = run(repo, p, manifest, registry)
     assert "evidence.see_it_running" in required_failures(rep)
     text = F.ANALYTICAL.replace("## Explore this project", "## See it running\n\n![screenshot](docs/assets/example.png)\n\nNo hosted demo.\n\n## Explore this project")
@@ -81,7 +81,7 @@ def test_interactive_readme_needs_see_it_running(tmp_path, manifest, registry):
 
 def test_foundation_readme_passes_without_results(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "tide", F.FOUNDATION, COMMON_FILES)
-    p = Project(name="tide", path=str(repo), type="analytical", status="Foundation", incomplete=True, hero="docs/assets/hero.png")
+    p = Project(name="tide", path=str(repo), type="analytical", status="Foundation", incomplete=True, banner="generated")
     rep = run(repo, p, manifest, registry)
     st = statuses(rep)
     assert st["analytical.quantitative"] == "NOT_APPLICABLE" and st["analytical.uncertainty"] == "NOT_APPLICABLE"
@@ -93,7 +93,7 @@ def test_foundation_readme_passes_without_results(tmp_path, manifest, registry):
 def test_project_specific_sections_are_never_failures(tmp_path, manifest, registry):
     text = F.ANALYTICAL.replace("## Limitations", "## Weekday residual plots\n\nA custom residual plot per weekday, useful for the owner.\n\n## Limitations")
     repo = make_repo(tmp_path, "study", text, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     st = statuses(rep)
     assert st["excellence.project_specific"] == "PASS_WITH_EXCELLENCE"
@@ -105,7 +105,7 @@ def test_project_specific_sections_are_never_failures(tmp_path, manifest, regist
 def test_broken_image_and_link_fail(tmp_path, manifest, registry):
     text = F.ANALYTICAL.replace("docs/assets/hero.png", "docs/assets/missing.png").replace("[Results](#results)", "[Results](#resultz)")
     repo = make_repo(tmp_path, "study", text, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     ids = required_failures(rep)
     assert "links.images" in ids and "links.internal" in ids and "identity.hero" in ids
@@ -115,7 +115,7 @@ def test_hype_and_placeholders_fail(tmp_path, manifest, registry):
     text = F.ANALYTICAL.replace("## What I would do with production data\n\n- Use per-product counts instead of totals.",
                                 "## What I would do with production data\n\n- TBD\n\nThe model is production-ready and state-of-the-art.")
     repo = make_repo(tmp_path, "study", text, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     ids = required_failures(rep)
     assert "honesty.placeholders" in ids and "honesty.hype" in ids
@@ -123,14 +123,14 @@ def test_hype_and_placeholders_fail(tmp_path, manifest, registry):
 
 def test_license_section_must_match_file(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL.replace("MIT. See [`LICENSE`](LICENSE).", "Apache-2.0. See [`LICENSE`](LICENSE)."), COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     assert "meta.license_section" in required_failures(rep)
 
 
 def test_missing_license_is_fail_or_blocked(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL.replace("MIT. See [`LICENSE`](LICENSE).", "No license file is present in this repository."), COMMON_FILES, license_text=None)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     assert "meta.license_file" in required_failures(rep)
     p.license_blocked_reason = "third-party material bundled"
@@ -140,7 +140,7 @@ def test_missing_license_is_fail_or_blocked(tmp_path, manifest, registry):
 
 def test_status_mismatch_with_registry_fails(tmp_path, manifest, registry):
     repo = make_repo(tmp_path, "study", F.ANALYTICAL, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Maintained", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Maintained", banner="generated")
     rep = run(repo, p, manifest, registry)
     ids = required_failures(rep)
     assert "identity.status_line" in ids and "honesty.status_section" in ids
@@ -149,7 +149,7 @@ def test_status_mismatch_with_registry_fails(tmp_path, manifest, registry):
 def test_reproduce_commands_must_reference_real_targets(tmp_path, manifest, registry):
     text = F.ANALYTICAL.replace("python run.py", "make everything")
     repo = make_repo(tmp_path, "study", text, {**COMMON_FILES, "Makefile": "test:\n\tpytest\n"})
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     assert "technical.reproduce" in required_failures(rep)
 
@@ -157,7 +157,7 @@ def test_reproduce_commands_must_reference_real_targets(tmp_path, manifest, regi
 def test_length_limit(tmp_path, manifest, registry):
     text = F.ANALYTICAL + "\n" + "\n".join(f"filler line {i}" for i in range(500))
     repo = make_repo(tmp_path, "study", text, COMMON_FILES)
-    p = Project(name="study", path=str(repo), type="analytical", status="Complete", hero="docs/assets/hero.png")
+    p = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
     rep = run(repo, p, manifest, registry)
     assert "meta.length" in required_failures(rep)
     p.max_lines = 1000

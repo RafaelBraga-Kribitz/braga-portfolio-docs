@@ -33,7 +33,7 @@ except Exception:  # pragma: no cover
     TTFont = None
 
 PALETTE = {
-    "light": {"surface": "#E6E6E6", "ink": "#282828", "ink2": "#646464", "mid": "#A0A0A0", "accent": "#FA6400"},
+    "light": {"surface": "#E6E6E6", "ink": "#282828", "ink2": "#4A4A4A", "mid": "#A0A0A0", "accent": "#FA6400"},  # ink2 darkened 2026-09-17 for readability (7.6:1)
     "dark": {"surface": "#1A1A1A", "ink": "#F5F5F5", "ink2": "#D0D0D0", "mid": "#808080", "accent": "#FA6400"},
 }
 
@@ -229,21 +229,21 @@ def layout(spec: HeroSpec, fonts: FontSet, title_size: int, desc_size: int) -> l
 
     # top row: brand / kind label (left) and status (right)
     left_label = f"{spec.brand}{sep}{spec.kind}".upper() if spec.kind else spec.brand.upper()
-    kb = Block("kind", [left_label], load_font(fonts.mono, 22), fonts.mono, MARGIN, MARGIN, 30, pal["ink2"],
-               tracking=2, fallback=load_font(fonts.fallback_mono, 22), dots=True)
+    kb = Block("kind", [left_label], load_font(fonts.mono, 24), fonts.mono, MARGIN, MARGIN, 32, pal["ink2"],
+               tracking=2, fallback=load_font(fonts.fallback_mono, 24), dots=True)
     blocks.append(kb)
     if spec.status:
         st = spec.status.upper()
-        sb = Block("status", [st], load_font(fonts.mono, 22), fonts.mono, 0, MARGIN, 30, pal["ink2"],
-                   tracking=2, fallback=load_font(fonts.fallback_mono, 22))
+        sb = Block("status", [st], load_font(fonts.mono, 24), fonts.mono, 0, MARGIN, 32, pal["ink2"],
+                   tracking=2, fallback=load_font(fonts.fallback_mono, 24))
         sb.x = W - MARGIN - sb._w(st)
         blocks.append(sb)
 
     # facts row (bottom), under a hairline; trailing facts are dropped until the row fits
     facts = [f"{k.upper()}  {v}" for k, v in spec.facts if v]
     fy = H - MARGIN - 26
-    fb = Block("facts", [""], load_font(fonts.mono, 20), fonts.mono, MARGIN, fy, 26, pal["ink2"],
-               fallback=load_font(fonts.fallback_mono, 20), dots=True)
+    fb = Block("facts", [""], load_font(fonts.mono, 22), fonts.mono, MARGIN, fy, 28, pal["ink2"],
+               fallback=load_font(fonts.fallback_mono, 22), dots=True)
     while facts:
         row = f"  {DOT}  ".join(facts)
         if fb._w(row) <= safe_w:
@@ -252,7 +252,7 @@ def layout(spec: HeroSpec, fonts: FontSet, title_size: int, desc_size: int) -> l
     if facts:
         fb.lines = [f"  {DOT}  ".join(facts)]
         blocks.append(fb)
-    body_top = MARGIN + 30 + 24
+    body_top = MARGIN + 32 + 24
     body_bottom = (fy - 22 - 40) if facts else (H - MARGIN)
 
     # title + descriptor, vertically centred in the body band
@@ -366,7 +366,7 @@ def generate(spec: HeroSpec, out_path: Path | str, fonts_dir: str | Path | None 
     attempts = []
     chosen = None
     for ts in (112, 104, 96, 88, 80, 72, 64, 56, 48):
-        for ds in (34, 32, 30, 28, 26, 24):
+        for ds in (36, 34, 32, 30, 28, 26):
             blocks = layout(spec, fonts, ts, ds)
             problems = validate_blocks(blocks, spec)
             attempts.append({"title_size": ts, "desc_size": ds, "problems": problems})

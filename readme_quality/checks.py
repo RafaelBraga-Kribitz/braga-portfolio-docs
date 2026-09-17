@@ -176,14 +176,43 @@ def h1_title(ctx: CheckContext) -> Result:
     return Result(PASS, f"H1: {h1.title}")
 
 
+def banner_target(project) -> str:
+    b = getattr(project, "banner", "generated") or "generated"
+    return (getattr(project, "banner_path", "") or "docs/assets/hero.png") if b == "generated" else b
+
+
+def _norm(path: str) -> str:
+    return path.strip().replace("\\", "/").removeprefix("./")
+
+
 def hero_visual(ctx: CheckContext) -> Result:
+    """The vanity banner is the first thing after the H1; badges follow; every other visual comes later."""
+    rd = ctx.readme
+    if not rd.h1:
+        return Result(FAIL, "no H1", auto_fixable=True)
+    want = _norm(banner_target(ctx.project))
     imgs = _hero_images(ctx)
     if not imgs:
-        return Result(FAIL, "no image before the first H2 (hero slot empty)", auto_fixable=True)
-    bad = [im.target for im in imgs if not is_external(im.target) and not _resolves(ctx, im.target)]
-    if bad:
-        return Result(FAIL, f"hero image does not resolve: {bad[0]}", evidence=bad, auto_fixable=True)
-    return Result(PASS, f"hero: {imgs[0].target}")
+        return Result(FAIL, "no image before the first H2 (banner slot empty)", auto_fixable=True)
+    first = imgs[0]
+    if _norm(first.target) != want:
+        return Result(FAIL, f"first visual is {first.target}; the vanity banner {want} must come first, then badges, then other visuals", auto_fixable=True)
+    if not _resolves(ctx, first.target):
+        return Result(FAIL, f"banner image does not resolve: {first.target}", auto_fixable=True)
+    # nothing but blank lines between the H1 and the banner
+    between = [l for l in rd.lines[rd.h1.line + 1:first.line] if l.strip() and not l.strip().startswith("<p") and not l.strip().startswith("<img")]
+    if between:
+        return Result(FAIL, "content between the H1 and the banner; the banner must be the first element", auto_fixable=True)
+    badge_lines = rd.badge_lines()
+    if badge_lines:
+        first_badge = badge_lines[0]
+        for im in imgs[1:]:
+            if im.line < first_badge:
+                return Result(FAIL, f"visual {im.target} appears before the badge row; order is banner, badges, status, then other visuals", auto_fixable=True)
+        for f in rd.fences:
+            if first.line < f.line < first_badge:
+                return Result(FAIL, "a code/diagram block appears before the badge row; order is banner, badges, status, then other visuals", auto_fixable=True)
+    return Result(PASS, f"banner first: {first.target}")
 
 
 def badge_row(ctx: CheckContext) -> Result:
@@ -273,8 +302,8 @@ def primary_evidence(ctx: CheckContext) -> Result:
     rd, p = ctx.readme, ctx.project
     ptype = p.type
     incomplete = getattr(p, "incomplete", False)
-    hero_generated = getattr(p, "hero", "generated") == "generated"
-    imgs = [im for im in rd.images if not (hero_generated and im.target.replace("./", "").endswith((getattr(p, "hero_path", "") or "docs/assets/hero.png").replace("./", "")))]
+    banner = _norm(banner_target(p))
+    imgs = [im for im in rd.images if _norm(im.target) != banner and not _norm(im.target).endswith(getattr(ctx.author, "photo", "Author_MDS_Rafael_Braga-Kribitz_kroped.png"))]
     resolving = [im for im in imgs if is_external(im.target) or _resolves(ctx, im.target)]
     early_limit = 150
     diagram = any(f.lang == "mermaid" or (f.lang in DIAGRAM_LANGS and BOX_RE.search(f.body)) for f in rd.fences)
@@ -750,7 +779,13 @@ def author_block(ctx: CheckContext) -> Result:
     missing = [x for x in (a.name, a.location, str(a.year), a.linkedin) if x not in body]
     if missing:
         return Result(FAIL, f"author block missing: {missing}", auto_fixable=True)
-    return Result(PASS, "canonical author block")
+    photo = getattr(a, "photo", "Author_MDS_Rafael_Braga-Kribitz_kroped.png")
+    m = re.search(r"<img[^>]*src=[\"']([^\"']+)[\"']", body)
+    if not m or not m.group(1).endswith(photo):
+        return Result(FAIL, f"author block has no portrait <img> ({photo})", auto_fixable=True)
+    if not _resolves(ctx, m.group(1)):
+        return Result(FAIL, f"author portrait does not resolve: {m.group(1)}", auto_fixable=True)
+    return Result(PASS, "canonical author block with portrait")
 
 
 def readme_length(ctx: CheckContext) -> Result:

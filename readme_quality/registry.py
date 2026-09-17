@@ -28,6 +28,7 @@ class Author:
     linkedin: str = "https://www.linkedin.com/in/rafaelbragakribitz/"
     email: str = "rafaelbragakribitz@gmail.com"
     github: str = "RafaelBraga-Kribitz"
+    photo: str = "Author_MDS_Rafael_Braga-Kribitz_kroped.png"   # basename; canonical copy in blocks/assets/, vendored to docs/assets/
 
 
 @dataclass
@@ -43,8 +44,11 @@ class Project:
     incomplete: bool = False
     public_data: bool = True        # analytical: production-data section required when True
     estimation: str = "yes"         # analytical: "none" => uncertainty check NOT_APPLICABLE
-    hero: str = "generated"         # "generated" or a repo-relative path to an existing chart/screenshot
-    hero_path: str = "docs/assets/hero.png"
+    banner: str = "generated"       # vanity hero shown FIRST: "generated" (design-system banner) or a repo-relative path
+    banner_path: str = "docs/assets/hero.png"   # where the generated banner is written
+    primary_chart: str = ""         # optional repo-relative path of the main result chart (shown below badges)
+    hero: str = ""                  # deprecated alias: "generated" -> banner; a path -> primary_chart
+    hero_path: str = ""             # deprecated alias of banner_path
     demo: str = "motion"            # interactive: "motion" | "static" (static needs demo_reason)
     demo_reason: str = ""
     hosted_urls: list[str] = field(default_factory=list)
@@ -123,6 +127,13 @@ def load_registry(path: Path | str | None = None, repos_root: str | Path | None 
             if k not in Project.__dataclass_fields__:
                 raw.pop(k)
         p = Project(**raw)
+        if p.hero and not raw.get("banner"):  # legacy field
+            if p.hero == "generated":
+                p.banner = "generated"
+            else:
+                p.primary_chart = p.hero
+        if p.hero_path and not raw.get("banner_path"):
+            p.banner_path = p.hero_path
         if p.type not in VALID_TYPES:
             raise SystemExit(f"project {p.name}: unknown type {p.type!r} (valid: {sorted(VALID_TYPES)})")
         if p.status and p.status not in vocab:
