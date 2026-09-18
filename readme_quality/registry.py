@@ -39,6 +39,7 @@ class Project:
     github: str = ""
     title: str = ""                 # human-readable title used by the hero generator
     descriptor: str = ""            # one line, factual, used by the hero generator
+    tagline: str = ""               # short motto set in uppercase mono under the banner title
     status: str = ""                # controlled vocabulary; empty = BLOCKED_HUMAN on status checks
     interactive: bool = False
     incomplete: bool = False

@@ -23,6 +23,7 @@ status_vocabulary: [Prototype, Foundation, In development, Functional, Complete,
 #   type: analytical | application | library | framework | docs
 #   status: vocabulary term (required for the status checks to be auto-fixable)
 #   title / descriptor: used by the hero generator and the H1 fix; must be factual
+#   tagline: short motto rendered in uppercase mono under the banner title (one line)
 #   banner: "generated" (design-system banner, written to banner_path) or a repo-relative path to a vanity banner — always FIRST after the H1
 #   primary_chart: repo-relative path of the main result chart / rendered example, shown after the badges and status line
 #   demo: motion | static  (static requires demo_reason)  — interactive projects only
@@ -100,13 +101,14 @@ projects:
     descriptor: "A vendorable governance kit: YAML findings that ratchet from open gap to CI-enforced gate, synced bidirectionally to every consumer project."
     banner: generated
 
-  - name: gsd-dsx
-    github: RafaelBraga-Kribitz/GSD-DSX
-    path: GSD-DSX
+  - name: dsx
+    github: RafaelBraga-Kribitz/DSX
+    path: DSX
     type: framework
     status: Maintained
-    title: "gsd-dsx"
-    descriptor: "Data-science rigour for the GSD agent loop: deterministic gates that block leakage, underpowered designs, and overclaimed results."
+    title: "DSX"
+    tagline: "Declare. Substantiate. eXplain."
+    descriptor: "Data Science, eXamined: deterministic gates that block leakage, underpowered designs, and overclaimed results."
     banner: generated
     runtime: "Python 3.9+ · Node"
 
