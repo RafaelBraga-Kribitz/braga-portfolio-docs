@@ -108,7 +108,7 @@ projects:
     status: Maintained
     title: "DSX"
     tagline: "Declare. Substantiate. eXplain."
-    descriptor: "Data Science, eXamined: deterministic gates that block leakage, underpowered designs, and overclaimed results."
+    descriptor: "Data Science, eXamined: a spec-driven workflow with deterministic gates that block leakage, underpowered designs, and overclaimed results."
     banner: generated
     runtime: "Python 3.9+ · Node"
 
