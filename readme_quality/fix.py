@@ -415,13 +415,28 @@ class Fixer:
         if not self.dry_run:
             (self.repo_dir / "LICENSE").write_text(body, encoding="utf-8", newline="\n")
         self.changes.append(f"meta.license_file: created LICENSE ({lid}, {year}, {self.author.name}) — basis: {reason}")
+        self.ensure_notice()
+
+    def ensure_notice(self) -> None:
+        text = (getattr(self.project, "license_notice", "") or "").strip()
+        if not text:
+            return
+        dst = self.repo_dir / "NOTICE"
+        if dst.exists():
+            return
+        if not self.dry_run:
+            dst.write_text(text.rstrip("\n") + "\n", encoding="utf-8", newline="\n")
+        self.changes.append("meta.license_file: created NOTICE (third-party material excluded from the grant)")
 
     def fix_license_section(self, text: str) -> str:
         facts = self._facts()
         rd = parse(text)
         secs = rd.find_sections(C.LICENSE_ALIASES, level=2)
         if facts.license_file and facts.license_id != "UNKNOWN":
+            self.ensure_notice()
             wanted = block("license", license=facts.license_id, file=facts.license_file.name)
+            if (self.repo_dir / "NOTICE").exists():
+                wanted = wanted.rstrip("\n") + " Third-party material bundled in this repository is listed in [`NOTICE`](NOTICE) and is not covered by that grant.\n"
             name = C._license_name(facts.license_id)
             if secs and re.search(re.escape(name), secs[0].body, re.I):
                 return text

@@ -19,28 +19,23 @@ Copyright line: `Copyright (c) <year of first commit> Rafael Braga-Kribitz`.
 
 ## 2. When the policy must escalate instead of deciding
 
-Set `license_blocked_reason` in `manifest/portfolio.yaml` when any of these hold:
+Escalation (`license_blocked_reason`) is reserved for the two cases the policy cannot decide from
+repository evidence:
 
-- The repository bundles third-party material whose rights are not the author's (downloaded reference
-  images, scraped pages, copied datasets, vendored code under another license). An MIT file at the root
-  would purport to license that material.
-- The repository is framed as a product with commercial or launch intent and no license is declared
-  anywhere. Choosing between MIT, Apache-2.0, and a restrictive license is the owner's call.
 - The code was produced under a contract or for an employer.
 - Two sources disagree (for example `package.json` says ISC while a README says MIT).
 
-Current escalations: `NextMove` (product framing, no declaration anywhere) and
-`Chart_Audit_Framework` (bundled third-party references).
+Everything else is decided by §3. No portfolio repository is escalated today.
 
 ## 3. Portfolio default and alternatives
 
 | License | Use when | Canonical text |
 |---|---|---|
 | **MIT** (default) | Portfolio code, analyses, libraries, frameworks written by the author with no patent concerns. Matches every licensed repository in the portfolio today. | `blocks/licenses/mit.txt` |
-| **Apache-2.0** | A library others will embed where an explicit patent grant matters, or when contributions from others are expected. | `blocks/licenses/apache-2.0.txt` |
+| **Apache-2.0** | (a) A repository framed as a product with a launch gate and no license declaration (NextMove): the explicit patent grant and contribution terms keep commercial options open without going source-available. (b) A repository that bundles third-party material whose rights are not the author's (Chart_Audit_Framework): Apache-2.0 for the author's own files plus a `NOTICE` file (registry `license_notice`) that names the excluded tree and states that no licence to that material is granted. (c) A library others will embed where a patent grant matters. | `blocks/licenses/apache-2.0.txt` + `NOTICE` |
 | **ISC** | Only when package metadata already declares it (npm default). Functionally equivalent to MIT. | `blocks/licenses/isc.txt` |
 | **CC BY 4.0** (documents) | Reports, decision documents, and aggregated outputs published alongside code. Declared in the README License section in addition to the code license, as `austria-data-job-market-intelligence` does. | not auto-generated |
-| Restrictive (e.g. PolyForm Noncommercial, source-available) | Product repositories where the owner wants to keep commercial rights. | not auto-generated; owner's decision |
+| Restrictive (e.g. PolyForm Noncommercial, source-available) | Only when the owner sets `license:` to it explicitly; the policy never selects it. | not auto-generated |
 
 ## 4. What the README must say
 

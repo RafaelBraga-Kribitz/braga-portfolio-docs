@@ -39,6 +39,7 @@ class Project:
     github: str = ""
     title: str = ""                 # human-readable title used by the hero generator
     descriptor: str = ""            # one line, factual, used by the hero generator
+    tagline: str = ""               # short motto set in uppercase mono under the banner title
     status: str = ""                # controlled vocabulary; empty = BLOCKED_HUMAN on status checks
     interactive: bool = False
     incomplete: bool = False
@@ -53,7 +54,8 @@ class Project:
     demo_reason: str = ""
     hosted_urls: list[str] = field(default_factory=list)
     license: str = ""               # override for the policy (e.g. "MIT"); empty = derive per policy
-    license_blocked_reason: str = ""  # set => meta.license_file becomes BLOCKED_HUMAN
+    license_blocked_reason: str = ""  # only for contract/employer work or conflicting declarations (docs/LICENSE_POLICY.md §2)
+    license_notice: str = ""        # text for a NOTICE file (Apache-2.0 repos that bundle third-party material)
     max_lines: int = 0              # 0 = manifest default
     max_lines_reason: str = ""
     runtime: str = ""               # optional, e.g. "Python 3.12" — shown on the hero if set

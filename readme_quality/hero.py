@@ -8,7 +8,7 @@ Visual rules applied (from the design system's tokens and README):
 
 Guardrails (all programmatic):
   - every text block wrapped to the safe width; type shrinks until it fits
-  - line-length caps (title <= 3 lines / 44 chars, descriptor <= 3 lines / 96 chars)
+  - line-length caps (title <= 3 lines / 44 chars, tagline 1 line, descriptor <= 3 lines / 96 chars)
   - no rectangle overlap between blocks; every block inside the safe area
   - glyph coverage checked per character against the font's cmap (the trial Söhne
     files carry 68 glyphs); uncovered characters render in the fallback font at the
@@ -53,6 +53,7 @@ class HeroLayoutError(RuntimeError):
 class HeroSpec:
     title: str
     descriptor: str = ""
+    tagline: str = ""         # short motto set in uppercase mono under the title (the machine layer)
     kind: str = ""            # Analytical project / Library / Framework / Application
     status: str = ""
     facts: list[tuple[str, str]] = field(default_factory=list)  # (LABEL, value) — repository facts only
@@ -255,23 +256,33 @@ def layout(spec: HeroSpec, fonts: FontSet, title_size: int, desc_size: int) -> l
     body_top = MARGIN + 32 + 24
     body_bottom = (fy - 22 - 40) if facts else (H - MARGIN)
 
-    # title + descriptor, vertically centred in the body band
+    # title, optional tagline, descriptor — vertically centred in the body band.
+    # Gaps differ per pair: the tagline belongs to the title, the descriptor is a
+    # separate thought, so it gets the wider gap.
     tb = Block("title", [], load_font(fonts.display, title_size), fonts.display, MARGIN, 0, int(title_size * 1.02), pal["ink"],
                fallback=load_font(fonts.fallback_display, title_size))
     tb.lines = wrap(spec.title, tb, safe_w)
     stack = [tb]
+    gaps: list[int] = []
+    if spec.tagline:
+        tag_size = max(20, min(26, int(desc_size * 0.72)))
+        gb = Block("tagline", [], load_font(fonts.mono, tag_size), fonts.mono, MARGIN, 0, int(tag_size * 1.35), pal["ink2"],
+                   tracking=3, fallback=load_font(fonts.fallback_mono, tag_size), dots=True)
+        gb.lines = wrap(spec.tagline.upper(), gb, safe_w)
+        gaps.append(20)
+        stack.append(gb)
     if spec.descriptor:
         db = Block("descriptor", [], load_font(fonts.body, desc_size), fonts.body, MARGIN, 0, int(desc_size * 1.35), pal["ink"],
                    fallback=load_font(fonts.fallback_body, desc_size))
         db.lines = wrap(spec.descriptor, db, int(safe_w * 0.78))
+        gaps.append(32 if spec.tagline else 28)
         stack.append(db)
-    gap = 28
-    body_h = sum(b.line_height * len(b.lines) for b in stack) + gap * (len(stack) - 1)
+    body_h = sum(b.line_height * len(b.lines) for b in stack) + sum(gaps)
     y = body_top + max(0, (body_bottom - body_top - body_h) // 2)
     y = (y // GRID) * GRID
-    for b in stack:
+    for i, b in enumerate(stack):
         b.y = y
-        y += b.line_height * len(b.lines) + gap
+        y += b.line_height * len(b.lines) + (gaps[i] if i < len(gaps) else 0)
         blocks.append(b)
     return blocks
 
@@ -292,8 +303,10 @@ def validate_blocks(blocks: list[Block], spec: HeroSpec) -> list[str]:
             problems.append(f"title wraps to {len(b.lines)} lines (max 3)")
         if b.name == "descriptor" and len(b.lines) > 3:
             problems.append(f"descriptor wraps to {len(b.lines)} lines (max 3)")
+        if b.name == "tagline" and len(b.lines) > 1:
+            problems.append(f"tagline wraps to {len(b.lines)} lines (max 1) — shorten it")
     named = {b.name: b for b in blocks}
-    body_bottom = max(named[n].bbox[3] for n in ("title", "descriptor") if n in named)
+    body_bottom = max(named[n].bbox[3] for n in ("title", "tagline", "descriptor") if n in named)
     if "facts" in named and named["facts"].bbox[1] - body_bottom < 40:
         problems.append("facts row collides with the body text")
     if "kind" in named and "title" in named and named["title"].bbox[1] - named["kind"].bbox[3] < 16:
@@ -415,4 +428,5 @@ def spec_from_project(project, facts) -> HeroSpec:
     if gh:
         facts_row.append(("Repo", f"github.com/{gh}"))
     title = project.title or re.sub(r"[-_]+", " ", project.name).title()
-    return HeroSpec(title=title, descriptor=project.descriptor or "", kind=kind, status=project.status or "", facts=facts_row)
+    return HeroSpec(title=title, descriptor=project.descriptor or "", tagline=getattr(project, "tagline", "") or "",
+                    kind=kind, status=project.status or "", facts=facts_row)

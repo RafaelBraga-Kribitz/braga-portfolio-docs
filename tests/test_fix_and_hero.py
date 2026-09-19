@@ -83,3 +83,32 @@ def test_hero_rejects_impossible_layout(tmp_path):
     except HeroLayoutError:
         return
     raise AssertionError("an unwrappable title must raise HeroLayoutError")
+
+
+def test_hero_tagline_renders_as_its_own_block(tmp_path):
+    out = tmp_path / "hero.png"
+    rep = generate(HeroSpec(title="DSX", tagline="Declare. Substantiate. eXplain.",
+                            descriptor="Data Science, eXamined: deterministic gates that block leakage.",
+                            kind="Framework", status="Maintained",
+                            facts=[("License", "MIT")]), out, report_path=tmp_path / "hero.json")
+    blocks = rep["blocks"]
+    assert blocks["tagline"]["lines"] == ["DECLARE. SUBSTANTIATE. EXPLAIN."]
+    # order on the canvas: title, then tagline, then descriptor
+    assert blocks["title"]["bbox"][3] <= blocks["tagline"]["bbox"][1]
+    assert blocks["tagline"]["bbox"][3] <= blocks["descriptor"]["bbox"][1]
+    assert out.exists()
+
+
+def test_hero_keeps_a_long_tagline_on_one_line(tmp_path):
+    """The guardrail shrinks the type until the motto fits; it never wraps to two lines."""
+    long_motto = "Declare the analysis before the data is touched and substantiate every claim with code"
+    rep = generate(HeroSpec(title="DSX", tagline=long_motto, descriptor="x"), tmp_path / "h.png")
+    assert len(rep["blocks"]["tagline"]["lines"]) == 1
+
+
+def test_hero_rejects_an_unwrappable_tagline(tmp_path):
+    try:
+        generate(HeroSpec(title="DSX", tagline="Substantiate" * 20, descriptor="x"), tmp_path / "h2.png")
+    except HeroLayoutError:
+        return
+    raise AssertionError("a tagline that cannot fit on one line must raise HeroLayoutError")
