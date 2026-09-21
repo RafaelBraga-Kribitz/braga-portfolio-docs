@@ -14,6 +14,9 @@ Fixes (id -> what it does):
   links.images / links.internal  repair a broken relative path when the basename is unique in the repo
   navigation.audience   turn bare section names in audience rows into anchor links
   analytical.epistemic  insert the tag legend under the Data section when tags are used but unexplained
+  communication.alt_distinct  replace a primary chart's borrowed alt text with the registry
+                              `primary_chart_alt` — and only with that; the fixer never describes a
+                              chart it has not looked at
 """
 from __future__ import annotations
 
@@ -24,7 +27,7 @@ from string import Template
 
 from . import checks as C
 from .audit import Report, audit_repo
-from .parse import TABLE_SEP_RE, Readme, github_slug, parse, resolve_relative, is_external
+from .parse import BADGE_RE, MD_IMG_RE, TABLE_SEP_RE, Readme, github_slug, parse, resolve_relative, is_external
 from .registry import Author, Project, Registry
 from .repofacts import RepoFacts, collect
 
@@ -229,6 +232,9 @@ class Fixer:
                 banner_block = b
                 break
         if banner_block is None:
+            # The banner is a generated *text* banner: it renders the title and the descriptor, so
+            # title + descriptor is an accurate description OF THE BANNER. It is never the alt text of
+            # a chart — a chart shows data, not the project's one-line summary. See fix_chart_alt.
             alt = f"{self.project.title or self.project.name}: {self.project.descriptor}".strip(": ") if self.project.descriptor else (self.project.title or self.project.name)
             alt = alt.replace("]", ")").replace("[", "(")
             banner_block = {"kind": "image", "target": target, "lines": [f"![{alt}]({target})"]}
@@ -256,6 +262,48 @@ class Fixer:
         if new_text != text:
             self.changes.append("identity.hero: identity zone reordered (banner, badges, status, prose, other visuals)")
         return new_text
+
+    def fix_chart_alt(self, text: str) -> str:
+        """Repair a primary chart whose alt text describes the project instead of the chart.
+
+        Only ever writes the registry's `primary_chart_alt`, which an author wrote after looking at
+        the chart. With no `primary_chart_alt` declared, the fixer reports the defect and changes
+        nothing: it has not seen the chart and must not describe it.
+        """
+        rd = parse(text)
+        banner = C._norm(self._banner_target())
+        photo = (getattr(self.author, "photo", "") or "").lower()
+        descriptor = C._norm_alt(self.project.descriptor)
+        banner_alt = next((C._norm_alt(im.alt) for im in rd.images if C._norm(im.target) == banner), "")
+        declared = C._norm(getattr(self.project, "primary_chart", "") or "")
+        wanted = (getattr(self.project, "primary_chart_alt", "") or "").strip()
+
+        figures = [im for im in rd.images
+                   if C._norm(im.target) != banner
+                   and not BADGE_RE.search(im.target)
+                   and not (photo and C._norm(im.target).lower().endswith(photo))]
+        primary = next((im for im in figures if C._norm(im.target) == declared), figures[0] if figures else None)
+        if primary is None:
+            return text
+        current = C._norm_alt(primary.alt)
+        borrowed = bool(current) and (current == descriptor or (banner_alt and current == banner_alt))
+        if not borrowed and current:
+            return text
+        why = "copied from the banner / registry descriptor" if borrowed else "empty"
+        if not wanted:
+            self.changes.append(
+                f"communication.alt_distinct: alt text of {primary.target} is {why}; set `primary_chart_alt` "
+                f"for {self.project.name} in manifest/portfolio.yaml — the fixer will not describe a chart it has not seen")
+            return text
+        lines = text.split("\n")
+        line = lines[primary.line]
+        safe = wanted.replace("[", "(").replace("]", ")")
+        new_line = MD_IMG_RE.sub(lambda m: f"![{safe}]({m.group(2)})" if m.group(2) == primary.target else m.group(0), line)
+        if new_line == line:
+            return text
+        lines[primary.line] = new_line
+        self.changes.append(f"communication.alt_distinct: alt text of {primary.target} was {why}; replaced with the registry `primary_chart_alt`")
+        return "\n".join(lines)
 
     def fix_badges(self, text: str) -> str:
         rd = parse(text)
@@ -588,6 +636,12 @@ class Fixer:
         if report.readme is None:
             self.changes.append("readme.exists: no README — create one from templates/<type>.md (not auto-generated: prose needs repository evidence)")
             return report, self.changes
+        # runs whether or not anything is failing: communication.* are recommended, so they never
+        # appear in `failing`, and a chart's alt text is worth repairing on a README that already passes
+        text = self.fix_chart_alt(self._read())
+        if text != self._read():
+            self._write(text, "README.md updated")
+            report = audit_repo(self.repo_dir, self.project, self.manifest, self.registry)
         for _ in range(max_rounds):
             failing = {f.id for f in report.findings if f.status in (C.FAIL, C.BLOCKED)}
             if not failing:

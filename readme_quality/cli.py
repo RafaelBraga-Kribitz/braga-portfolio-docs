@@ -3,6 +3,7 @@
   python -m readme_quality audit    --repo PATH | --name NAME | --all   [--json] [--verbose]
   python -m readme_quality fix      --repo PATH | --name NAME | --all   [--dry-run]
   python -m readme_quality hero     --repo PATH | --name NAME [--out PATH] [--fonts DIR]
+  python -m readme_quality diagram  --repo PATH | --name NAME --input RAW.mmd [--accent NODE] [--direction TD|LR] [--out PATH]
   python -m readme_quality detect   PATH
   python -m readme_quality explain  REQUIREMENT_ID
   python -m readme_quality portfolio [--fix] [--json]
@@ -128,6 +129,50 @@ def cmd_explain(args) -> int:
     return 0
 
 
+def cmd_diagram(args) -> int:
+    """Restyle a raw gitdiagram graph and verify its click targets before it is committed."""
+    from .diagram import parse_graph, restyle, verify_clicks
+    registry = _registry(args)
+    repo_dir, project = next(_targets(args, registry))
+    raw = Path(args.input).read_text(encoding="utf-8")
+    g = parse_graph(raw)
+
+    if not args.accent:
+        print(f"{len(g.nodes)} node(s). Choose one accent node with --accent (the entry point a reader")
+        print("starts from, or the output the decision is read off). Candidates:")
+        print(f"  entry points (no incoming edge): {', '.join(g.entry_points) or '(none)'}")
+        print(f"  outputs (no outgoing edge)     : {', '.join(g.outputs) or '(none)'}")
+        return 2
+
+    v = verify_clicks(g, repo_dir, getattr(project, "github", ""))
+    out = restyle(raw, args.accent, args.direction or "")
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text("```mermaid\n" + out + "```\n", encoding="utf-8")
+        print(f"wrote {args.out}")
+    else:
+        print("```mermaid")
+        print(out, end="")
+        print("```")
+
+    msg = [f"{v['total']} click target(s): {v['files']} file(s), {v['dirs']} director(ies) resolve"]
+    if v["case_only"]:
+        msg.append(f"{len(v['case_only'])} owner/repo case mismatch (GitHub resolves them; the registry spelling is canonical)")
+    if v["external"]:
+        msg.append(f"{len(v['external'])} off-GitHub target(s) the gate cannot reach — verify by hand: "
+                   + "; ".join(v["external"]))
+    if v["empty_on_github"]:
+        msg.append(f"{len(v['empty_on_github'])} director(ies) that resolve locally but are empty on GitHub "
+                   "(contents gitignored or DVC-tracked) — link the artifact declaration instead: "
+                   + "; ".join(v["empty_on_github"]))
+    if g.unclicked:
+        msg.append(f"{len(g.unclicked)} node(s) with no click line: {', '.join(g.unclicked)}")
+    print("\n" + "\n".join(f"  {m}" for m in msg), file=sys.stderr)
+    for bad in v["missing"] + v["wrong_repo"]:
+        print(f"  BROKEN  {bad}", file=sys.stderr)
+    return 1 if (v["missing"] or v["wrong_repo"]) else 0
+
+
 def cmd_portfolio(args) -> int:
     from .portfolio import run_portfolio
     run = run_portfolio(args.registry, args.repos_root, fix=args.fix, names=args.only, dry_run=args.dry_run, fonts_dir=args.fonts)
@@ -179,6 +224,14 @@ def main(argv=None) -> int:
 
     e = sub.add_parser("explain", help="explain a requirement id")
     e.add_argument("id"); e.set_defaults(fn=cmd_explain)
+
+    dg = sub.add_parser("diagram", help="restyle a raw gitdiagram graph to the design system and verify its click targets"); sel(dg)
+    dg.add_argument("--input", required=True, help="file holding the raw gitdiagram Mermaid graph")
+    dg.add_argument("--accent", help="the one node that carries the orange; omit to list candidates")
+    dg.add_argument("--direction", choices=["TD", "TB", "LR", "RL", "BT"],
+                    help="override the generator's flowchart direction (layout only; the graph is unchanged)")
+    dg.add_argument("--out", help="write the fenced block here instead of stdout")
+    dg.set_defaults(fn=cmd_diagram)
 
     pf = sub.add_parser("portfolio", help="audit (or fix) every registered repository")
     pf.add_argument("--fix", action="store_true"); pf.add_argument("--dry-run", action="store_true")

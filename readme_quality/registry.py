@@ -17,6 +17,10 @@ HERE = Path(__file__).resolve().parent.parent
 DEFAULT_REGISTRY = HERE / "manifest" / "portfolio.yaml"
 
 VALID_TYPES = {"analytical", "application", "library", "framework", "docs"}
+ARCH_DIAGRAM_MODES = {"gitdiagram", "manual", "none"}
+ARCH_DIAGRAM_DEFAULT_TYPES = {"analytical", "application", "framework"}
+FIGURE_DIRS = ("reports", "outputs/figures", "docs/assets")   # searched in this order
+FIGURE_SUFFIXES = {".png", ".svg", ".jpg", ".jpeg", ".webp", ".gif"}
 
 
 @dataclass
@@ -48,6 +52,12 @@ class Project:
     banner: str = "generated"       # vanity hero shown FIRST: "generated" (design-system banner) or a repo-relative path
     banner_path: str = "docs/assets/hero.png"   # where the generated banner is written
     primary_chart: str = ""         # optional repo-relative path of the main result chart (shown below badges)
+    primary_chart_alt: str = ""     # alt text for that chart, written by the author; the fixer never invents one
+    figures_dir: str = ""           # where generated figures live; empty = search FIGURE_DIRS in order
+    architecture_diagram: str = ""  # gitdiagram | manual | none ; empty = ARCH_DIAGRAM_DEFAULT for the type
+    architecture_diagram_reason: str = ""      # required when architecture_diagram: none
+    architecture_diagram_commit: str = ""      # sha the committed diagram was generated from
+    architecture_diagram_generated: str = ""   # YYYY-MM-DD the diagram was generated
     hero: str = ""                  # deprecated alias: "generated" -> banner; a path -> primary_chart
     hero_path: str = ""             # deprecated alias of banner_path
     demo: str = "motion"            # interactive: "motion" | "static" (static needs demo_reason)
@@ -56,14 +66,24 @@ class Project:
     license: str = ""               # override for the policy (e.g. "MIT"); empty = derive per policy
     license_blocked_reason: str = ""  # only for contract/employer work or conflicting declarations (docs/LICENSE_POLICY.md §2)
     license_notice: str = ""        # text for a NOTICE file (Apache-2.0 repos that bundle third-party material)
-    max_lines: int = 0              # 0 = manifest default
+    max_lines: int = 0              # 0 = manifest default; an override without a reason is ignored
     max_lines_reason: str = ""
+    max_lines_total: int = 0        # 0 = manifest default; an override without a reason is ignored
+    max_lines_total_reason: str = ""
     runtime: str = ""               # optional, e.g. "Python 3.12" — shown on the hero if set
     notes: str = ""
 
     @property
     def is_analytical(self) -> bool:
         return self.type == "analytical"
+
+    @property
+    def architecture_diagram_mode(self) -> str:
+        """Declared mode, or the default for the project type (`none` where no diagram is required)."""
+        declared = (self.architecture_diagram or "").strip().lower()
+        if declared in ARCH_DIAGRAM_MODES:
+            return declared
+        return "gitdiagram" if self.type in ARCH_DIAGRAM_DEFAULT_TYPES else "none"
 
 
 @dataclass
@@ -140,6 +160,9 @@ def load_registry(path: Path | str | None = None, repos_root: str | Path | None 
             raise SystemExit(f"project {p.name}: unknown type {p.type!r} (valid: {sorted(VALID_TYPES)})")
         if p.status and p.status not in vocab:
             raise SystemExit(f"project {p.name}: status {p.status!r} not in vocabulary {vocab}")
+        declared_arch = (p.architecture_diagram or "").strip().lower()
+        if declared_arch and declared_arch not in ARCH_DIAGRAM_MODES:
+            raise SystemExit(f"project {p.name}: architecture_diagram {p.architecture_diagram!r} (valid: {sorted(ARCH_DIAGRAM_MODES)})")
         projects.append(p)
     return Registry(path=path, repos_root=root, author=author, status_vocabulary=vocab, projects=projects)
 

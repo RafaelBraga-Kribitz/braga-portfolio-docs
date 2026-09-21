@@ -32,7 +32,8 @@ class Requirement:
 @dataclass
 class Manifest:
     version: str
-    max_readme_lines: int
+    max_readme_lines: int          # rendered lines (meta.length)
+    max_readme_lines_total: int    # raw file lines (meta.length_total)
     project_types: dict[str, str]
     status_vocabulary: list[str]
     epistemic_tags: list[str]
@@ -64,6 +65,7 @@ def load_manifest(path: Path | str | None = None) -> Manifest:
     return Manifest(
         version=str(data.get("version", "0")),
         max_readme_lines=int(data.get("max_readme_lines", 450)),
+        max_readme_lines_total=int(data.get("max_readme_lines_total", 1000)),
         project_types=dict(data.get("project_types") or {}),
         status_vocabulary=list(data.get("status_vocabulary") or []),
         epistemic_tags=list(data.get("epistemic_tags") or []),

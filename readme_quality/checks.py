@@ -10,8 +10,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .parse import Readme, Section, is_external, resolve_relative, github_slug
-from .repofacts import RepoFacts
+from .parse import BADGE_RE, GITHUB_BLOB_RE, Readme, Section, is_external, resolve_relative, github_slug
+from .repofacts import RepoFacts, normalize_dep
 
 PASS = "PASS"
 PASS_EXC = "PASS_WITH_EXCELLENCE"
@@ -75,6 +75,18 @@ BANNED_OPENINGS = re.compile(
 )
 DECISION_WORDS = re.compile(r"\?|\bdecision\b|\bcost\b|\brisk\b|\bwhich\b|\bwhat\b|\bhow much\b|\bwhether\b|\bshould\b", re.I)
 QUANT_RE = re.compile(r"\d+(?:[.,]\d+)?\s?(%|percent|pp\b|€|EUR\b|USD\b|\$|MAPE|RMSE|MAE|k\b|M€|×|x\b|s\b|ms\b|weeks?\b|episodes?\b|rows?\b|postings?\b|tests?\b)|\bn\s?=\s?\d|€\s?\d|\$\s?\d", re.I)
+COMPARATOR_RE = re.compile(
+    r"\bvs\.?\b|\bversus\b|compared (?:to|with)|\bbaseline\b|\bagainst\b|relative to|\bΔ\b|\bdelta\b"
+    r"|[+\-−±]\s?\d+(?:[.,]\d+)?\s?(?:%|percent|pp\b|percentage points?\b)"
+    r"|\d+(?:[.,]\d+)?\s?(?:%|percent|pp\b|percentage points?\b)\s+(?:higher|lower|more|less|above|below)"
+    # `above`/`below` only: `over the period` and `under the licence` are duration and scope, not comparison
+    r"|\b(?:above|below)\s+(?:its|the|their|a|an)\b"
+    r"|\b\d+(?:[.,]\d+)?\s?[x×]\s+(?:higher|lower|faster|slower|cheaper|more|less)\b"
+    r"|\b(?:lowest|highest|cheapest|costliest|largest|smallest|best|worst)\b"
+    r"|\b(?:improve[ds]?|cut|reduced?|raised?|rose|fell|dropped|gained?)\s+(?:\w+\s+){0,3}from\b.{0,40}\bto\b"
+    r"|\bcomparator\b|\bbenchmark\b|\bcounterfactual\b|\bcontrol group\b|\bhold-?out\b",
+    re.I,
+)
 UNCERTAINTY_RE = re.compile(r"\binterval\b|credible|confidence|\bp5\b|\bp95\b|\bp10\b|\bp90\b|percentile|±|1σ|\bsigma\b|probability of|std\b|standard deviation|\bHDI\b|\bCI\b|coverage", re.I)
 NO_RESULTS_RE = re.compile(r"no results (exist )?yet|results do not (yet )?exist|none are quoted|not yet implemented|does not exist yet|no results are quoted|not yet (built|shipped)|no published|lands here at|what does not exist|nothing here answers", re.I)
 VALIDATION_RE = re.compile(r"hold-?out|known[- ]truth|baseline|backtest|cross-?valid|leave-one|precision (audit|of)|acceptance test|self-?test|pytest|vitest|unittest|npm test|make test|make verify|golden|\btests? pass|integration test|unit test|recovery", re.I)
@@ -437,13 +449,18 @@ def _results_text(ctx: CheckContext) -> str:
 
 
 def quantitative_results(ctx: CheckContext) -> Result:
+    """Numbers with units *and* a comparator: a number alone does not tell a reader whether it is good."""
     if getattr(ctx.project, "incomplete", False):
         return Result(NA, "incomplete project")
     text = _results_text(ctx)
-    hits = QUANT_RE.findall(text)
-    if len(hits) >= 2:
-        return Result(PASS, f"{len(hits)} quantitative expressions in the results")
-    return Result(FAIL, "results are not quantitative (need numbers with units and a comparator)")
+    quant = QUANT_RE.findall(text)
+    comps = COMPARATOR_RE.findall(text)
+    if len(quant) < 2:
+        return Result(FAIL, f"{len(quant)} quantitative expression(s) in the results; need at least two numbers with units")
+    if not comps:
+        return Result(FAIL, f"{len(quant)} quantitative expressions but no comparator; say what each number is measured against "
+                            "(baseline, previous period, alternative, a stated threshold)")
+    return Result(PASS, f"{len(quant)} quantitative expressions and {len(comps)} comparator(s) in the results")
 
 
 def uncertainty_reported(ctx: CheckContext) -> Result:
@@ -508,6 +525,12 @@ def production_data(ctx: CheckContext) -> Result:
 # ============================================================ technical
 def architecture_inline(ctx: CheckContext) -> Result:
     rd = ctx.readme
+    mode = getattr(ctx.project, "architecture_diagram_mode", "gitdiagram")
+    if mode == "none":
+        reason = (getattr(ctx.project, "architecture_diagram_reason", "") or "").strip()
+        if reason:
+            return Result(NA, f"registry declares architecture_diagram: none — {reason}")
+        return Result(FAIL, "registry declares architecture_diagram: none but gives no architecture_diagram_reason")
     for f in rd.fences:
         if f.lang == "mermaid":
             return Result(PASS, "mermaid diagram")
@@ -518,6 +541,52 @@ def architecture_inline(ctx: CheckContext) -> Result:
         if rd.images_in(s.start, s.end):
             return Result(PASS, "architecture image")
     return Result(FAIL, "no inline architecture diagram (mermaid, ASCII, or image under Architecture)")
+
+
+def architecture_links(ctx: CheckContext) -> Result:
+    """Every `click` target in a Mermaid diagram points at a file that exists, in this repository.
+
+    gitdiagram writes absolute GitHub blob links against a lowercased owner. GitHub resolves those,
+    so an owner-case mismatch is reported as a consistency warning, not as a broken link.
+    """
+    rd = ctx.readme
+    clicks = rd.mermaid_clicks()
+    if not clicks:
+        return Result(NA, "no `click` lines in any mermaid diagram")
+    declared = (getattr(ctx.project, "github", "") or "").strip()
+    missing, wrong_repo, case_only, external = [], [], [], []
+    for node, target, line in clicks:
+        m = GITHUB_BLOB_RE.match(target.strip())
+        if not m:
+            if is_external(target):
+                external.append(f"L{line + 1}: {node} -> {target}")
+                continue
+            path = target.strip().lstrip("./")
+        else:
+            owner, repo, path = m.group(1), m.group(2).removesuffix(".git"), m.group(3)
+            path = path.split("#", 1)[0].split("?", 1)[0]   # `…/findings.py#L92` is a normal GitHub link
+            slug = f"{owner}/{repo}"
+            if declared and slug.lower() != declared.lower():
+                wrong_repo.append(f"L{line + 1}: {slug} (registry github: {declared})")
+                continue
+            if declared and slug != declared:
+                case_only.append(f"L{line + 1}: {slug} (registry github: {declared})")
+        if not (ctx.repo_dir / path).exists():
+            missing.append(f"L{line + 1}: {node} -> {path}")
+    if missing or wrong_repo:
+        ev = missing + wrong_repo
+        parts = []
+        if missing:
+            parts.append(f"{len(missing)} click target(s) do not exist in the checkout")
+        if wrong_repo:
+            parts.append(f"{len(wrong_repo)} click link(s) point at another repository")
+        return Result(FAIL, "; ".join(parts), evidence=ev[:10])
+    note = ""
+    if case_only:
+        note += f"; {len(case_only)} owner/repo case mismatch(es) — GitHub resolves them, the registry spelling is canonical"
+    if external:
+        note += f"; {len(external)} non-GitHub link(s) not checked"
+    return Result(PASS, f"{len(clicks)} click target(s) resolve" + note, evidence=(case_only + external)[:10])
 
 
 def repo_structure(ctx: CheckContext) -> Result:
@@ -707,6 +776,165 @@ def no_results_statement(ctx: CheckContext) -> Result:
     return Result(FAIL, "incomplete project: say explicitly what does not exist yet (e.g. 'no results exist yet')")
 
 
+# ============================================================ communication
+# The checkable part of IBCS / ISO 24896 for a repository README: the same quantity is presented
+# the same way everywhere, every figure says what it shows, and the visual does not outrun the
+# evidence. Everything that needs judgement is a review item in docs/AGENT_GUIDE.md, never a check.
+BADGE_HOSTS = re.compile(r"https?://(?:[a-z0-9-]+\.)*(?:shields\.io|badgen\.net|badge\.fury\.io|codecov\.io|coveralls\.io|snyk\.io|forthebadge\.com)/", re.I)
+
+
+def _is_badge_image(target: str) -> bool:
+    return bool(BADGE_HOSTS.search(target) or BADGE_RE.search(target))
+
+
+def _figure_images(ctx: CheckContext):
+    """README images that are figures: not badge shields, not the banner, not the author portrait."""
+    banner = _norm(banner_target(ctx.project))
+    photo = (getattr(ctx.author, "photo", "") or "Author_MDS_Rafael_Braga-Kribitz_kroped.png").lower()
+    out = []
+    for im in ctx.readme.images:
+        t = _norm(im.target)
+        if _is_badge_image(im.target) or t == banner or t.lower().endswith(photo):
+            continue
+        out.append(im)
+    return out
+
+
+def _primary_figure(ctx: CheckContext):
+    figs = _figure_images(ctx)
+    return figs[0] if figs else None
+
+
+def _norm_alt(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[*_`]", "", text or "")).strip().lower()
+
+
+def alt_text(ctx: CheckContext) -> Result:
+    """Every figure carries alt text. A chart nobody can read is not evidence for everybody."""
+    figs = _figure_images(ctx)
+    if not figs:
+        return Result(NA, "no figures in the README")
+    empty = [f"L{im.line + 1}: {im.target}" for im in figs if not im.alt.strip()]
+    if empty:
+        return Result(FAIL, f"{len(empty)} of {len(figs)} figure(s) have empty alt text", evidence=empty[:10])
+    return Result(PASS, f"{len(figs)} figure(s) carry alt text")
+
+
+def alt_distinct(ctx: CheckContext) -> Result:
+    """Alt text describes *this* figure: not the project, and not the figure above it."""
+    figs = _figure_images(ctx)
+    descriptor = _norm_alt(getattr(ctx.project, "descriptor", ""))
+    problems, seen = [], {}
+    for im in figs:
+        a = _norm_alt(im.alt)
+        if not a:
+            continue  # empty alt is communication.alt_text's finding, not this one
+        if descriptor and a == descriptor:
+            problems.append(f"L{im.line + 1}: alt is the registry descriptor, which describes the project, not the chart")
+        if a in seen:
+            problems.append(f"L{im.line + 1}: alt text is identical to the figure at L{seen[a] + 1}")
+        else:
+            seen[a] = im.line
+    # the banner's alt legitimately names the project; a figure repeating it does not
+    banner_alt = next((_norm_alt(im.alt) for im in ctx.readme.images if _norm(im.target) == _norm(banner_target(ctx.project))), "")
+    if banner_alt:
+        for im in figs:
+            if _norm_alt(im.alt) == banner_alt:
+                problems.append(f"L{im.line + 1}: alt text is copied from the banner; describe what this chart shows")
+    if problems:
+        return Result(FAIL, problems[0], evidence=problems[:10])
+    return Result(PASS, f"{len(figs)} figure(s) with distinct alt text" if figs else "no figures")
+
+
+def chart_theme(ctx: CheckContext) -> Result:
+    """Charts from different repositories should look like siblings; that means one theme package."""
+    facts, p = ctx.facts, ctx.project
+    if normalize_dep(getattr(p, "name", "")) == "bk-viz":
+        return Result(NA, "this repository is the design-system theme")
+    if facts.declares_python_dep("bk-viz"):
+        return Result(PASS, f"bk-viz declared in {', '.join(facts.python_dep_sources) or 'the packaging metadata'}")
+    if not facts.python_dep_sources:
+        return Result(FAIL, "no pyproject.toml or requirements*.txt declares any dependency, so the chart theme cannot be pinned")
+    return Result(FAIL, f"bk-viz is not declared in {', '.join(facts.python_dep_sources)}; charts here will not look like the rest of the portfolio "
+                        "(bk-viz README: \"If two charts from different repos do not look like siblings, the theme is not applied\")")
+
+
+def _figures_on_disk(ctx: CheckContext) -> tuple[int, str]:
+    """(count, directory) for the first configured figure directory that holds result figures.
+
+    The banner and the author portrait live in docs/assets/ and are identity, not evidence,
+    so they are not counted here — the same exclusion _figure_images applies to the README.
+    """
+    from .registry import FIGURE_DIRS, FIGURE_SUFFIXES
+    declared = (getattr(ctx.project, "figures_dir", "") or "").strip()
+    banner = Path(_norm(banner_target(ctx.project))).name.lower()
+    photo = (getattr(ctx.author, "photo", "") or "").lower()
+    for rel in ([declared] if declared else list(FIGURE_DIRS)):
+        d = ctx.repo_dir / rel
+        if not d.is_dir():
+            continue
+        n = sum(1 for p in d.rglob("*")
+                if p.is_file() and p.suffix.lower() in FIGURE_SUFFIXES
+                and p.name.lower() not in (banner, photo))
+        if n or declared:
+            return n, rel
+    return 0, ""
+
+
+def figure_coverage(ctx: CheckContext) -> Result:
+    """A repository with thirteen figures and one in the README is hiding its own evidence."""
+    on_disk, where = _figures_on_disk(ctx)
+    if not on_disk:
+        return Result(NA, f"no generated figures found in {where or 'reports/, outputs/figures/, docs/assets/'}")
+    shown = len(_figure_images(ctx))
+    need = min(3, on_disk // 4)
+    ratio = f"{shown} of {on_disk} figures in {where}/ shown in the README (need {need})"
+    if shown >= need:
+        return Result(PASS, ratio)
+    return Result(FAIL, ratio + "; show the ones that carry the argument, or say in Limitations why the rest stay in the repository")
+
+
+def chart_caption(ctx: CheckContext) -> Result:
+    """A caption states what the chart shows. Alt text is for a reader who cannot see it; a caption is for one who can."""
+    im = _primary_figure(ctx)
+    if im is None:
+        return Result(NA, "no primary chart in the README")
+    rd = ctx.readme
+    for i in range(im.line + 1, min(im.line + 3, len(rd.masked_lines))):
+        s = rd.masked_lines[i].strip()
+        if not s:
+            continue
+        # a heading, table, fence, image, HTML block or list item is not a caption;
+        # `*italic*` is, so a bullet is only a bullet when the marker is followed by a space
+        if s.startswith(("#", "|", "```", "!", "<", "[!")) or re.match(r"^(?:[-*+]|\d+\.)\s", s):
+            break
+        caption = re.sub(r"^>\s*", "", s)
+        caption = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", caption)
+        if len(re.sub(r"[*_`]", "", caption).split()) < 4:
+            break
+        if _norm_alt(caption) == _norm_alt(im.alt):
+            return Result(FAIL, f"the caption under {im.target} repeats its alt text; say what the chart shows, not what it is")
+        return Result(PASS, f"caption under {im.target}: {caption[:70]}")
+    return Result(FAIL, f"no caption within two lines of the primary chart ({im.target}); name what it shows and what the reader should take from it")
+
+
+def message_heading(ctx: CheckContext) -> Result:
+    """A finding-style heading carries the number. This is a proxy for that, not a judgement of the sentence."""
+    if getattr(ctx.project, "incomplete", False):
+        return Result(NA, "incomplete project: no findings to head yet")
+    rd = ctx.readme
+    secs = _sections(ctx, RESULTS_ALIASES, level=2)
+    if not secs:
+        return Result(NA, "no results section")
+    subs = [h for s in secs for h in rd.headings if s.start < h.line < s.end and h.level in (2, 3)]
+    subs += [s.heading for s in secs]
+    numbered = [h for h in subs if re.search(r"\d", h.title)]
+    if numbered:
+        return Result(PASS, f"finding-style heading: {numbered[0].title}")
+    return Result(FAIL, f"no H2 or H3 in the results section carries a number ({len(subs)} heading(s) checked); "
+                        "a heading that states the finding beats one that names the topic")
+
+
 # ============================================================ links
 def images_resolve(ctx: CheckContext) -> Result:
     bad = []
@@ -788,13 +1016,36 @@ def author_block(ctx: CheckContext) -> Result:
     return Result(PASS, "canonical author block with portrait")
 
 
+def _limit_with_override(ctx: CheckContext, field: str, reason_field: str, default: int) -> tuple[int, str]:
+    """The effective ceiling. An override without a reason is ignored, as the standard says."""
+    override = int(getattr(ctx.project, field, 0) or 0)
+    reason = (getattr(ctx.project, reason_field, "") or "").strip()
+    if override and reason:
+        return override, f"registry {field}: {reason}"
+    if override:
+        return default, f"registry {field}: {override} ignored (no {reason_field})"
+    return default, ""
+
+
 def readme_length(ctx: CheckContext) -> Result:
-    n = len(ctx.readme.lines)
-    limit = getattr(ctx.project, "max_lines", 0) or ctx.manifest.max_readme_lines
+    """Rendered length: what a reader sees, not what the file contains."""
+    n = ctx.readme.rendered_line_count
+    raw = len(ctx.readme.lines)
+    limit, note = _limit_with_override(ctx, "max_lines", "max_lines_reason", ctx.manifest.max_readme_lines)
+    detail = f"{n} rendered lines of {raw} in the file (limit {limit})" + (f"; {note}" if note else "")
     if n <= limit:
-        return Result(PASS, f"{n} lines (limit {limit})")
-    reason = getattr(ctx.project, "max_lines_reason", "")
-    return Result(FAIL, f"{n} lines exceeds {limit}; move migration notes, changelogs, and long caveats into docs/ and link them" + (f" ({reason})" if reason else ""))
+        return Result(PASS, detail)
+    return Result(FAIL, detail + "; move methodology, governance, migration notes and long caveats into docs/ and link them")
+
+
+def readme_length_total(ctx: CheckContext) -> Result:
+    """Raw file length: the second ceiling, so excluded regions cannot grow without limit."""
+    n = len(ctx.readme.lines)
+    limit, note = _limit_with_override(ctx, "max_lines_total", "max_lines_total_reason", ctx.manifest.max_readme_lines_total)
+    detail = f"{n} lines in the file (limit {limit})" + (f"; {note}" if note else "")
+    if n <= limit:
+        return Result(PASS, detail)
+    return Result(FAIL, detail + "; the file is long even where it does not render — check fenced blocks and HTML comments")
 
 
 # ============================================================ excellence
@@ -852,6 +1103,7 @@ CHECKS = {
     "validation_section": validation_section,
     "production_data": production_data,
     "architecture_inline": architecture_inline,
+    "architecture_links": architecture_links,
     "repo_structure": repo_structure,
     "reproduce_section": reproduce_section,
     "stack_table": stack_table,
@@ -865,12 +1117,19 @@ CHECKS = {
     "no_hype": no_hype,
     "status_section": status_section,
     "no_results_statement": no_results_statement,
+    "alt_text": alt_text,
+    "alt_distinct": alt_distinct,
+    "chart_theme": chart_theme,
+    "figure_coverage": figure_coverage,
+    "chart_caption": chart_caption,
+    "message_heading": message_heading,
     "images_resolve": images_resolve,
     "links_resolve": links_resolve,
     "license_file": license_file,
     "license_section": license_section,
     "author_block": author_block,
     "readme_length": readme_length,
+    "readme_length_total": readme_length_total,
     "audience_personas": audience_personas,
     "claim_tracing": claim_tracing,
     "why_section": why_section,
