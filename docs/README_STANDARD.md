@@ -1,8 +1,8 @@
-# BRAGA Portfolio README Quality Standard v1.2
+# BRAGA Portfolio README Quality Standard v1.3
 
-**Status:** Active · **Last updated:** 2026-09-17 (v1.2: banner-first identity order, portrait in the author block, readability revision of the banner generator) · **Owner:** Rafael Braga-Kribitz
+**Status:** Active · **Last updated:** 2026-09-21 (v1.3: `meta.length` measures rendered lines and `meta.length_total` caps the file; gitdiagram as the architecture-diagram source with a link-integrity check; the `communication.*` family; `analytical.quantitative` now tests the comparator it always described) · **Owner:** Rafael Braga-Kribitz
 **Machine-readable companion:** [`../manifest/requirements.yaml`](../manifest/requirements.yaml) (requirement ids, severities, checks, remediation)
-**Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md)
+**Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md) · **Architecture diagrams:** [`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md)
 
 Every public portfolio project satisfies the same documentation contract. The project itself determines
 the content.
@@ -12,7 +12,15 @@ the content.
 
 The README is the **executive interface to the repository**, not the repository dumped into Markdown.
 Anything longer than a screen of detail (methodology, governance, migration notes, long caveats) lives
-in a linked document. The README stays under 450 lines.
+in a linked document.
+
+**Length is measured in rendered lines, not file lines.** The README stays under 450 lines that a reader
+actually sees — prose, headings, list items, table rows, images. A fenced block (including a `mermaid`
+diagram), an HTML comment line, a badge-only line and a blank line are not counted, because none of them
+is something the reader reads. A second ceiling of 1000 raw file lines watches the excluded regions; it
+is `recommended` in v1.3, so it warns rather than blocks. Raw counting was the wrong unit: it charged
+eighty lines for a diagram that renders as one figure and one line for a three-hundred-character claim
+comment, taxing exactly the evidence this standard asks for more of.
 
 ## 0. Two layers
 
@@ -40,7 +48,19 @@ Type and status are **declared** in `manifest/portfolio.yaml`; the gate never in
 Flags: `interactive` (adds Tier C), `incomplete` (Foundation rules: results-bearing checks become
 not-applicable, an explicit "no results yet" statement becomes required), `public_data: false`,
 `estimation: none`, `demo: static` + `demo_reason`, `hosted_urls`, `hero`, `license`,
-`license_blocked_reason`, `max_lines` + `max_lines_reason`.
+`license_blocked_reason`, `max_lines` + `max_lines_reason`, `max_lines_total` +
+`max_lines_total_reason`, `architecture_diagram` (+ `_reason`, `_commit`, `_generated`),
+`primary_chart_alt`, `figures_dir`.
+
+A length override without its reason is **ignored** and the manifest default applies — the reason is
+the point of the override, not paperwork attached to it.
+
+`architecture_diagram_commit` and `architecture_diagram_generated` are **recorded, not verified**. No
+check compares them against the checkout or against the diagram, because nothing in the repository can
+prove which commit a model-generated graph was produced from. They are the author's statement, and the
+provenance line under the diagram is where the reader sees it. What the gate does check is that the
+diagram's `click` targets still resolve (`technical.architecture_links`), which is what actually goes
+stale.
 
 ## 2. Requirements
 
@@ -82,7 +102,7 @@ Evidence hierarchy the README must respect: **source data / repository evidence 
 |---|---|---|---|
 | `analytical.decision` | Decision, findings, or question stated | required | |
 | `analytical.results` | Results / Key findings / Decision section; incomplete projects state that results do not exist | required | |
-| `analytical.quantitative` | Numbers with units and a comparator in the results | required | NA when incomplete |
+| `analytical.quantitative` | ≥ 2 numbers with units **and** ≥ 1 comparator in the results section | required | NA when incomplete |
 | `analytical.uncertainty` | Interval, percentile, coverage, or probability next to estimates | required | NA when incomplete or `estimation: none` |
 | `analytical.data` | Data section naming source, period, and grain (H2 or H3) | required | |
 | `analytical.epistemic` | Tags `VERIFIED` / `CALIBRATED` / `SIMULATED` / `ILLUSTRATIVE` applied, with the legend table | required | legend auto-inserted when tags exist |
@@ -90,14 +110,29 @@ Evidence hierarchy the README must respect: **source data / repository evidence 
 | `analytical.validation` | Holdout, known truth, baseline, backtest, labelled audit, or acceptance/self-test named | required | also for libraries and frameworks |
 | `analytical.production_data` | What changes with production data | required | NA when incomplete or `public_data: false` |
 
+A comparator is one of: `vs` · `versus` · `compared to/with` · `baseline` · `against` · `relative to` ·
+`Δ` / `delta` · a signed percentage or percentage-point change (`+3.7 pp`, `−28 %`) · comparative
+phrasing (`above its`, `below the`, `2x lower`, `lowest`, `highest`) · `comparator` · `benchmark` ·
+`counterfactual` · `holdout`. A number with no comparator does not tell a reader whether it is good.
+
 ### Technical
 
 | Id | Requirement | Applies to | Severity | Auto-fix |
 |---|---|---|---|---|
-| `technical.architecture` | Inline diagram: Mermaid, ASCII, or an image under *Architecture* | analytical, application, framework | required | assisted |
+| `technical.architecture` | Inline diagram: Mermaid, ASCII, or an image under *Architecture*. For these types the diagram is a **restyled gitdiagram graph** unless the registry declares `architecture_diagram: manual`; `none` + `architecture_diagram_reason` makes it NA | analytical, application, framework | required | assisted |
+| `technical.architecture_links` | Every `click` target in a Mermaid diagram resolves on disk; a link to a different repository fails, an owner/repo **case** difference is reported alongside a `PASS` (gitdiagram lowercases the owner and GitHub resolves it); NA without `click` lines | all | recommended | manual |
 | `technical.structure` | Repository structure naming ≥ 3 real paths (checked on disk) | all | required | yes (names and counts only) |
 | `technical.reproduce` | Reproduce / Quick start / Install with a command block; every `make`/`just` target and script referenced exists | all | required | manual |
 | `technical.stack` | Stack table with reasons | all | recommended | assisted |
+
+**Architecture section shape** (analytical, application, framework): a prose sentence naming the
+principal workflow, then the diagram, then the provenance line. gitdiagram emits that sentence
+alongside the graph and it belongs in the README — a diagram with no sentence explaining the principal
+workflow is a picture, not an explanation. Blocks:
+[`../blocks/architecture-mermaid.md`](../blocks/architecture-mermaid.md) (restyling),
+[`../blocks/architecture-provenance.md`](../blocks/architecture-provenance.md) (generator, commit, date,
+and the generator's own declared caveat). Full procedure and the licence position:
+[`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md).
 
 ### Library and framework
 
@@ -119,6 +154,36 @@ Evidence hierarchy the README must respect: **source data / repository evidence 
 | `honesty.status_section` | `## Status` with the vocabulary term and a date, version, or milestone | all | required | yes |
 | `honesty.no_results_statement` | Incomplete projects say what does not exist yet | incomplete | required | manual |
 
+### Communication (new in v1.3)
+
+The checkable part of [IBCS Standards 2.0](https://www.ibcs.com/) and ISO 24896:2026 *Notation for
+Business Reporting*, taken from the UNIFY and CHECK areas of the SUCCESS formula: **the same business
+concept is always represented the same way, and the visual never exaggerates the evidence.**
+
+| Id | Requirement | Applies to | Severity | Auto-fix |
+|---|---|---|---|---|
+| `communication.alt_text` | Every figure has non-empty alt text (badge shields, the banner and the author portrait are excluded) | all | recommended | never |
+| `communication.alt_distinct` | No figure's alt equals the registry `descriptor`, repeats the banner's alt, or duplicates another figure's alt | all | recommended | only from `primary_chart_alt` |
+| `communication.chart_theme` | `bk-viz` is declared as a dependency (`pyproject.toml`, including the `[tool.uv.sources]` git form, or `requirements*.txt`); a repository that declares no dependencies at all also warns; NA for `bk-viz` itself | analytical, library | recommended | never |
+| `communication.figure_coverage` | Figures in the README ≥ `min(3, floor(0.25 × figures on disk))`; the directory is `figures_dir`, else the first of `reports/`, `outputs/figures/`, `docs/assets/` that holds figures. On both sides of the ratio the banner, the author portrait and badge shields are excluded | analytical | recommended | never |
+| `communication.chart_caption` | A caption paragraph (italic, blockquote or plain, ≥ 4 words) within two lines of the primary chart, not identical to its alt text | all | recommended | never |
+| `communication.message_heading` | The results section's own H2, or an H2/H3 inside it, contains a numeral; NA when incomplete or when there is no results section | analytical | recommended | never |
+
+The fixer writes nothing here that it has not been given. Its one action is `communication.alt_distinct`:
+when a primary chart's alt text is empty or copied from the banner, it substitutes the registry's
+`primary_chart_alt` — a string an author wrote after looking at the chart. With no `primary_chart_alt`
+declared it reports the defect and changes nothing. Captions, figure selection and the theme dependency
+are never automated.
+
+**Deliberately not adopted.** No IBCS score and no IBCS or ISO badge anywhere in a README or in the site
+copy — a badge is a claim about conformance that nothing here verifies. No scenario notation (actual /
+plan / forecast / previous year): these projects have no plan-versus-actual dimension, so the notation
+would be decoration. No message-style headings in `library` or `framework` READMEs, where *API
+reference* is the correct heading. What remains of IBCS — sign conventions, label decodability, whether
+the highlight asserts a rank the intervals support, whether a chart carries a message at README scale —
+requires reading the chart, so it lives in [`AGENT_GUIDE.md`](AGENT_GUIDE.md) as a review item, never as
+a check that guesses.
+
 ### Links and metadata
 
 | Id | Requirement | Severity | Auto-fix |
@@ -128,7 +193,8 @@ Evidence hierarchy the README must respect: **source data / repository evidence 
 | `meta.license_file` | LICENSE file present (see [`LICENSE_POLICY.md`](LICENSE_POLICY.md)); `BLOCKED_HUMAN` when ownership is unclear | required | policy-driven |
 | `meta.license_section` | `## License` names the same license as the file, or states truthfully that none exists | required | yes |
 | `meta.author` | Canonical author block with the portrait ([`../blocks/author.md`](../blocks/author.md); `docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png` vendored from `blocks/assets/`) | required | yes |
-| `meta.length` | ≤ 450 lines (`max_lines` override needs a reason) | required | manual |
+| `meta.length` | ≤ 450 **rendered** lines: prose, headings, list items, table rows, images. Fenced blocks, HTML comment lines, badge-only lines and blank lines are not counted (`max_lines` override applies only with a `max_lines_reason`) | required | manual |
+| `meta.length_total` | ≤ 1000 **raw** lines in the file (`max_lines_total` override applies only with a `max_lines_total_reason`) | recommended | manual |
 
 ### Excellence (never required)
 
@@ -152,7 +218,7 @@ guardrails (wrap-and-shrink, line-length caps, no overlap, safe area, per-glyph 
 | Primary result | analytical | chart or table |
 | Interface | interactive | screenshot before installation |
 | Motion | interactive, recommended | GIF ≤ 30 s or video; `demo: static` with a reason when motion adds nothing |
-| Architecture | analytical, application, framework | Mermaid, ASCII, or image |
+| Architecture | analytical, application, framework | restyled gitdiagram Mermaid graph (default), or ASCII or an image where the registry declares `manual`; a workflow sentence above it and a provenance line below it |
 | Supporting charts | where they carry evidence | with tag and source |
 
 Demonstration slot by project kind: interactive application → GIF / video / screenshots · dashboard →
@@ -178,7 +244,7 @@ Problem statement (≤ 2 sentences)
 ## Method                         (analytical)   | ## Quick start / Minimal example (library)
 ## Data + tag legend              (analytical)   | ## What it enforces               (library, framework)
 ## Validation
-## Architecture
+## Architecture                    workflow sentence -> diagram -> provenance line
 ## Reproduce / Install
 ## Limitations
 ## What I would do with production data   (analytical on public or synthetic data)
@@ -193,13 +259,36 @@ Problem statement (≤ 2 sentences)
 
 [`../blocks/`](../blocks/): `author.md`, `license.md`, `license-none.md`, `status.md`, `structure.md`,
 `epistemic-legend.md`, `audience.md`, `audience-tool.md`, `reproduce.md`, `limitations.md`,
-`production-data.md`, `provenance.md`, `badges.md`, and canonical license texts under `licenses/`.
+`production-data.md`, `provenance.md`, `badges.md`, `architecture-mermaid.md`,
+`architecture-provenance.md`, and canonical license texts under `licenses/`.
 Blocks use `$variable` placeholders filled from the registry or repository facts; none contains a claim.
 
-## 6. Versioning
+## 6. Versioning and the ratchet
 
 `manifest/requirements.yaml` carries the version. Adding, removing, or changing a check bumps it.
 Retired ids stay in the file with `retired: true`. Every version change re-audits the portfolio.
+
+**New checks land at `recommended`.** A check introduced as `required` would turn a real gap into a red
+gate on the day it ships, which pressures the next person to weaken the check rather than fix the
+repository. This is the `governance-bootstrap` ratchet: declare the gap, report it as a warning with the
+evidence, promote it once the repositories conform.
+
+### Promotion intent for v1.4
+
+| Id | Promote to `required` when | Blocking today |
+|---|---|---|
+| `communication.alt_text` | every figure in every registered README has alt text | `warehouse_humanoid_tco`: 6 of 8 figures have empty alt |
+| `communication.alt_distinct` | no figure repeats the banner's alt or the descriptor | `austria-data-job-market-intelligence`: the primary chart carries the banner's alt |
+| `communication.chart_theme` | `bk-viz` is declared in every `analytical` and `library` repository | declared in 1 of 4 flagship analytical repositories (`austrian-mmm-budget-optimizer`), and in neither non-`bk-viz` library |
+| `communication.chart_caption` | the primary chart in every README has a caption | 5 of 7 READMEs with a chart have none |
+| `technical.architecture_links` | at least one repository has committed a gitdiagram graph and it holds | `NOT_APPLICABLE` everywhere: no diagram carries `click` lines yet |
+
+`communication.figure_coverage` and `communication.message_heading` stay `recommended` past v1.4. Both
+are proxies — a ratio and a numeral — for judgements the gate cannot make, and a proxy that blocks a
+merge starts getting satisfied by its letter.
+
+Remediation is separate work, one repository at a time. This version creates the contract and the
+warnings; the backlog is enumerated in [`readme-audit-latest.md`](readme-audit-latest.md).
 
 ## 7. Out of scope
 

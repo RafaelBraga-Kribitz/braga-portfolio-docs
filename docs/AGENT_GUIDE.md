@@ -89,12 +89,72 @@ When you write them:
 `identity.*` (h1, hero, badges, problem, status_line) · `executive.summary` · `evidence.*` (primary,
 see_it_running, demo_motion, live_demo) · `navigation.audience` · `analytical.*` (decision, results,
 quantitative, uncertainty, data, epistemic, method, validation, production_data) ·
-`technical.*` (architecture, structure, reproduce, stack) · `library.*` (example, contract, api,
-install_pin) · `honesty.*` (limitations, falsification, placeholders, hype, status_section,
-no_results_statement) · `links.*` (images, internal) · `meta.*` (license_file, license_section,
-author, length) · `excellence.*` (audience_personas, claim_tracing, why, project_specific).
+`technical.*` (architecture, architecture_links, structure, reproduce, stack) · `library.*` (example,
+contract, api, install_pin) · `honesty.*` (limitations, falsification, placeholders, hype,
+status_section, no_results_statement) · `communication.*` (alt_text, alt_distinct, chart_theme,
+figure_coverage, chart_caption, message_heading) · `links.*` (images, internal) · `meta.*`
+(license_file, license_section, author, length, length_total) · `excellence.*` (audience_personas,
+claim_tracing, why, project_specific).
 
 `python -m readme_quality explain <id>` prints applicability, severity, evidence, and remediation.
+
+## Chart review items — judgement, never checks
+
+The `communication.*` requirements check what a regular expression can check: that a figure has alt
+text, that the alt is not the project's descriptor, that a caption exists, that the theme package is
+declared. Everything below is a judgement about whether the chart makes the argument the data supports.
+**None of it may become a gate check.** A check that guesses at these produces confident wrong answers,
+and the next person weakens the check instead of fixing the chart.
+
+Work through this list when authoring or reviewing a README that carries figures.
+
+1. **One sign convention, everywhere.** Is the same quantity shown with the same sign in the table, in
+   the chart, in the axis label and in the summary sentence? Cost positive or cost negative, chosen
+   once and held. `warehouse_humanoid_tco` prints the same quantity as `€-452,706` in the results table
+   and `€0.45M` on `reports/executive_charts/01_tco_npv_ranking.png`.
+2. **Decodable series labels.** Do the bar or series labels use internal identifiers a reader outside
+   the repository cannot decode? `S-lean-hybrid-amr` is a scenario key, not a label. Say what it is:
+   one human plus three robots.
+3. **Rank versus uncertainty.** Does the highlighted element assert a rank the uncertainty intervals do
+   not support? If the intervals of the top two overlap, the chart should not say one wins.
+4. **A message at README scale.** Does the chart carry a message when rendered at the width of a README
+   column, or is it a series-count dump that only works at full resolution? If a reader has to open the
+   PNG to read it, it is a link, not a figure.
+5. **What the first screen spends its space on.** Does the first screen spend it on a caveat that
+   belongs further down? A caveat that is load-bearing goes in the decision summary; the rest goes in
+   Limitations.
+6. **Axis labels leak conventions.** Is the axis label exposing an internal convention to the reader?
+   "Positive 5-year total cost" tells a reader about the sign handling in the code, not about the
+   money. Name the quantity and the unit.
+7. **The chart and the number agree.** When a chart and a table state the same quantity, do they agree
+   to the precision each one shows? Rounding to `€0.45M` next to `€-452,706` is two facts, not one.
+
+## Architecture diagrams
+
+The default source for `analytical`, `application` and `framework` projects is a
+[gitdiagram](https://github.com/ahmedkhaleel2004/gitdiagram) graph restyled to the design system.
+**gitdiagram has no CLI and no public API** — the procedure runs through its web app, by hand, and the
+result is committed with its commit sha and date. Read
+[`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md) before generating one, and do not invent a
+command-line invocation for it.
+
+Do not restyle by hand — `python -m readme_quality diagram --name <project> --input raw.mmd --accent
+<node>` does it deterministically, keeps every `subgraph`, node, edge label and `click` line
+byte-for-byte, and verifies the click targets while it works.
+
+**Check the direction against the column width.** GitHub renders a Mermaid block in a 783 px
+column (838 px at its widest, 309 px on a phone) and *shrinks* anything wider — labels included.
+`--direction TD|LR` flips the layout without touching the graph. Do not assume TD is narrower:
+TD lays sibling subgraphs out side by side, so a multi-subgraph graph is wider in TD than in LR.
+Measure both; see [`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md) §3c.
+
+**A resolving click link is not an implemented module.** Before committing a diagram for any project
+with `incomplete: true`, open the files the nodes point at. A module whose functions
+`raise NotImplementedError` is a contract, not a stage, and it belongs behind a dashed edge — see
+[`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md) §3a for the case this rule came from.
+Put the generator's workflow paragraph above the graph and the provenance line
+([`../blocks/architecture-provenance.md`](../blocks/architecture-provenance.md)) below it, including
+whatever caveat the generator declared about its own sampling.
 
 ## CI
 
