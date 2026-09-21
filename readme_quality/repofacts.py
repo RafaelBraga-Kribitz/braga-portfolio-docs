@@ -47,16 +47,77 @@ class RepoFacts:
     has_package_json: bool = False
     package_json_deps: set[str] = field(default_factory=set)
     pyproject_deps: set[str] = field(default_factory=set)
+    python_deps: set[str] = field(default_factory=set)      # normalized, from pyproject + requirements*.txt
+    python_dep_sources: list[str] = field(default_factory=list)  # files the names came from
     all_files: list[Path] = field(default_factory=list)
 
     def has_file(self, rel: str) -> bool:
         return (self.repo_dir / rel).exists()
+
+    def declares_python_dep(self, name: str) -> bool:
+        return normalize_dep(name) in self.python_deps
 
     def basename_index(self) -> dict[str, list[Path]]:
         idx: dict[str, list[Path]] = {}
         for p in self.all_files:
             idx.setdefault(p.name.lower(), []).append(p)
         return idx
+
+
+def normalize_dep(name: str) -> str:
+    """PEP 503 normalization, so `bk_viz`, `BK-VIZ` and `bk.viz` are one name."""
+    return re.sub(r"[-_.]+", "-", str(name).strip()).lower()
+
+
+def _dep_names_from_requirement(spec: str) -> str:
+    """The distribution name out of one requirement line, including PEP 508 direct URLs."""
+    s = spec.split("#", 1)[0].strip()
+    if not s or s.startswith("-"):           # -r other.txt, -e ., --index-url …
+        return ""
+    s = s.split(";", 1)[0].strip()           # environment marker
+    s = re.split(r"\s*@\s*", s, maxsplit=1)[0]   # name @ git+https://…
+    m = re.match(r"([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?", s)
+    return m.group(1) if m else ""
+
+
+def _collect_python_deps(repo_dir: Path, f: RepoFacts) -> None:
+    """Declared Python dependencies from pyproject.toml and every requirements*.txt."""
+    py = repo_dir / "pyproject.toml"
+    if py.is_file():
+        txt = py.read_text(encoding="utf-8", errors="replace")
+        names: set[str] = set()
+        try:
+            import tomllib
+            data = tomllib.loads(txt)
+            proj = data.get("project") or {}
+            arrays = [proj.get("dependencies") or []]
+            arrays += list((proj.get("optional-dependencies") or {}).values())
+            arrays += list((data.get("dependency-groups") or {}).values())
+            for arr in arrays:
+                for spec in arr:
+                    if isinstance(spec, str):
+                        names.add(_dep_names_from_requirement(spec))
+            tool = data.get("tool") or {}
+            # uv/poetry/pdm source tables name the same distributions by key
+            names |= set((tool.get("uv") or {}).get("sources") or {})
+            names |= set(((tool.get("poetry") or {}).get("dependencies") or {}))
+            names |= set(((tool.get("poetry") or {}).get("group") or {}).get("dev", {}).get("dependencies") or {})
+        except Exception:  # unparsable or older runtime: fall back to the loose scan
+            names |= {_dep_names_from_requirement(x) for x in re.findall(r"^\s*[\"']([^\"']+)[\"']", txt, re.M)}
+            names |= set(re.findall(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*=\s*\{", txt, re.M))
+        if names:
+            f.python_dep_sources.append("pyproject.toml")
+        f.python_deps |= {normalize_dep(n) for n in names if n}
+
+    for req in sorted(repo_dir.glob("requirements*.txt")) + sorted(repo_dir.glob("requirements/*.txt")):
+        try:
+            lines = req.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        found = {normalize_dep(n) for n in (_dep_names_from_requirement(l) for l in lines) if n}
+        if found:
+            f.python_dep_sources.append(req.relative_to(repo_dir).as_posix())
+        f.python_deps |= found
 
 
 def _git(repo_dir: Path, *args: str) -> str:
@@ -179,6 +240,8 @@ def collect(repo_dir: Path) -> RepoFacts:
     if jf.is_file():
         for m in re.finditer(r"^([A-Za-z0-9_\-]+)(?:\s+[^:\n]*)?:(?!=)", jf.read_text(encoding="utf-8", errors="replace"), re.M):
             f.just_targets.add(m.group(1))
+
+    _collect_python_deps(repo_dir, f)
 
     f.all_files = _walk(repo_dir)
     try:

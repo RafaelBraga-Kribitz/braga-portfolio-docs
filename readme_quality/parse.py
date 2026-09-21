@@ -1,4 +1,10 @@
-"""Markdown README parser: headings, sections, identity zone, images, links, fences."""
+"""Markdown README parser: headings, sections, identity zone, images, links, fences.
+
+Also computes the *rendered* line count used by `meta.length`: the lines a reader
+actually sees, which is not the same as the number of lines in the file. A fenced
+Mermaid block renders as one figure and an HTML claim comment renders as nothing,
+so neither is counted; `meta.length_total` keeps the raw file size in check instead.
+"""
 from __future__ import annotations
 
 import re
@@ -9,11 +15,18 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 FENCE_RE = re.compile(r"^(```+|~~~+)\s*([A-Za-z0-9_+-]*)")
 MD_IMG_RE = re.compile(r"!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
 HTML_IMG_RE = re.compile(r"<img\b[^>]*?\bsrc\s*=\s*[\"']([^\"']+)[\"'][^>]*>", re.I | re.S)
+HTML_ALT_RE = re.compile(r"\balt\s*=\s*[\"']([^\"']*)[\"']", re.I)
 HTML_SRCSET_RE = re.compile(r"<source\b[^>]*?\bsrcset\s*=\s*[\"']([^\"'\s,]+)", re.I)
 MD_LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
 HTML_A_RE = re.compile(r"<a\b[^>]*?\bhref\s*=\s*[\"']([^\"']+)[\"']", re.I)
 BADGE_RE = re.compile(r"img\.shields\.io|/badge\.svg|badge/", re.I)
 TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
+COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+OPEN_COMMENT_RE = re.compile(r"<!--(?:(?!-->).)*$", re.S)
+LINKED_IMG_RE = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)")
+HTML_ANCHOR_BLOCK_RE = re.compile(r"<a\s[^>]*>.*?</a>", re.I | re.S)
+MERMAID_CLICK_RE = re.compile(r"^\s*click\s+(\S+)\s+[\"']([^\"']+)[\"']", re.M)
+GITHUB_BLOB_RE = re.compile(r"^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(?:blob|tree)/[^/]+/(.+?)/?$", re.I)
 
 
 def normalize_heading(title: str) -> str:
@@ -171,6 +184,27 @@ class Readme:
     def badge_lines(self) -> list[int]:
         return [i for i, l in enumerate(self.identity_lines) if BADGE_RE.search(l)]
 
+    @property
+    def rendered_lines(self) -> list[int]:
+        """Indices of the lines a reader actually sees rendered (see `rendered_line_numbers`)."""
+        return rendered_line_numbers(self)
+
+    @property
+    def rendered_line_count(self) -> int:
+        return len(self.rendered_lines)
+
+    def mermaid_clicks(self) -> list[tuple[str, str, int]]:
+        """(node_id, target, line) for every `click` line in a ```mermaid fence."""
+        out: list[tuple[str, str, int]] = []
+        for f in self.fences:
+            if f.lang != "mermaid":
+                continue
+            for i, line in enumerate(f.body.split("\n")):
+                m = MERMAID_CLICK_RE.match(line)
+                if m:
+                    out.append((m.group(1), m.group(2), f.line + 1 + i))
+        return out
+
     def tables_in(self, start: int, end: int) -> list[tuple[int, int]]:
         """(header_line, n_body_rows) for pipe tables between start and end."""
         out = []
@@ -185,6 +219,57 @@ class Readme:
             else:
                 i += 1
         return out
+
+
+def _html_alt(tag: str) -> str:
+    """The `alt` attribute of an <img> tag, empty when absent."""
+    m = HTML_ALT_RE.search(tag)
+    return m.group(1).strip() if m else ""
+
+
+def strip_badge_constructs(line: str) -> str:
+    """Remove the markdown/HTML constructs on a line whose target is a badge shield."""
+    def drop(m: re.Match) -> str:
+        return "" if BADGE_RE.search(m.group(0)) else m.group(0)
+    line = LINKED_IMG_RE.sub(drop, line)          # [![alt](shield)](link)
+    line = MD_IMG_RE.sub(drop, line)              # ![alt](shield)
+    line = HTML_ANCHOR_BLOCK_RE.sub(drop, line)   # <a href=…><img src=shield …></a>
+    line = HTML_IMG_RE.sub(drop, line)            # <img src=shield …>
+    return line
+
+
+def is_badge_only(line: str) -> bool:
+    """True when a line carries badge shields and nothing else that renders."""
+    s = line.strip()
+    return bool(s) and bool(BADGE_RE.search(s)) and not strip_badge_constructs(s).strip()
+
+
+def comment_masked_lines(masked_lines: list[str]) -> list[str]:
+    """`masked_lines` with HTML comment spans blanked out, line numbering preserved."""
+    def blank(m: re.Match) -> str:
+        return re.sub(r"[^\n]", " ", m.group(0))
+    text = COMMENT_RE.sub(blank, "\n".join(masked_lines))
+    return OPEN_COMMENT_RE.sub(blank, text).split("\n")
+
+
+def rendered_line_numbers(rd: Readme) -> list[int]:
+    """Indices of the lines that render as prose, headings, list items, tables or images.
+
+    Excluded: fenced code blocks and their ``` delimiters (a Mermaid graph renders as one
+    figure, not as its source), HTML comment lines (claim comments render as nothing),
+    badge-only lines, and blank lines. This is what `meta.length` measures; the raw file
+    length is measured separately by `meta.length_total`.
+    """
+    nocomment = comment_masked_lines(rd.masked_lines)
+    out: list[int] = []
+    for i in range(len(rd.masked_lines)):
+        if i < len(rd.fence_line_flags) and rd.fence_line_flags[i]:
+            continue
+        s = nocomment[i].strip() if i < len(nocomment) else ""
+        if not s or is_badge_only(s):
+            continue
+        out.append(i)
+    return out
 
 
 def parse(text: str, path: Path | None = None) -> Readme:
@@ -249,7 +334,7 @@ def parse(text: str, path: Path | None = None) -> Readme:
         for m in MD_IMG_RE.finditer(line):
             rd.images.append(ImageRef(m.group(1), m.group(2), i))
         for m in HTML_IMG_RE.finditer(line):
-            rd.images.append(ImageRef("", m.group(1), i))
+            rd.images.append(ImageRef(_html_alt(m.group(0)), m.group(1), i))
         for m in HTML_SRCSET_RE.finditer(line):
             rd.images.append(ImageRef("", m.group(1), i))
         for m in MD_LINK_RE.finditer(line):
@@ -265,7 +350,7 @@ def parse(text: str, path: Path | None = None) -> Readme:
     for m in HTML_IMG_RE.finditer(joined):
         line_no = joined.count("\n", 0, m.start())
         if (m.group(1), line_no) not in seen and not any(im.target == m.group(1) for im in rd.images):
-            rd.images.append(ImageRef("", m.group(1), line_no))
+            rd.images.append(ImageRef(_html_alt(m.group(0)), m.group(1), line_no))
     rd.images.sort(key=lambda x: x.line)
     return rd
 
