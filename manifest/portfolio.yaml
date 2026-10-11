@@ -49,7 +49,7 @@ projects:
     architecture_diagram_commit: 439104a
     architecture_diagram_generated: 2026-09-21
     interactive: true
-    status: Functional
+    status: Complete
     title: "Decision Analytics Reconstruction — Paraguay 2018 Presidential Election"
     descriptor: "Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one election from public anchors and synthetic voters."
     banner: generated
