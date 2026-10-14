@@ -113,9 +113,9 @@ projects:
     architecture_diagram_commit: 2595438
     architecture_diagram_generated: 2026-09-21
     incomplete: true
-    status: Foundation
+    status: Functional
     title: "Energy Procurement Risk Analyzer"
-    descriptor: "Procurement-strategy risk on the Austrian day-ahead market for a 50 GWh Styrian consumer. Ingest and warehouse built; strategy results not yet."
+    descriptor: "Procurement-strategy risk on the Austrian day-ahead market for a 50 GWh Styrian consumer. Pipeline built and tested; real-data results pending."
     banner: generated
 
   - name: governance-bootstrap
