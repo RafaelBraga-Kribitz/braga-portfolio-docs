@@ -172,10 +172,9 @@ projects:
     architecture_diagram_commit: 077e5ca
     architecture_diagram_generated: 2026-09-21
     interactive: false
-    incomplete: true
-    status: Foundation
+    status: In development
     title: "NextMove"
-    descriptor: "A headless behavioural decision engine for e-commerce next-best-action. Phase 1: reproducible simulated world, ingest, and features."
+    descriptor: "A headless behavioural decision engine for e-commerce next-best-action."
     banner: generated
     license: Apache-2.0   # policy §3: product framing with a launch gate and no declaration -> Apache-2.0 (patent grant, contribution-ready)
 
