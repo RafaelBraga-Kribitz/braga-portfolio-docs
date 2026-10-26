@@ -38,6 +38,7 @@ Exit 1 is `FAIL`; exit 2 is `BLOCKED_HUMAN` (report the reason, do not work arou
 | Project facts | `manifest/portfolio.yaml` |
 | The checks | `readme_quality/checks.py` |
 | Safe fixes | `readme_quality/fix.py`, `blocks/` |
-| Hero banner | `readme_quality/hero.py` |
+| Hero banner | `readme_quality/hero.py` (design system v2.1, D-051; tokens and faces via `readme_quality/design/`) |
+| Diagrams in any repository | `.claude/skills/braga-diagram/SKILL.md`, `python -m readme_quality theme` |
 | Starting structures | `templates/` |
 | CI | `ci/readme-quality.yml` |

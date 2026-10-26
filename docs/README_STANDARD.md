@@ -204,9 +204,14 @@ surprised me*) · `excellence.project_specific` (sections outside the standard v
 
 ## 3. Visual identity system
 
-Every project has the same visual **slots**, not the same image. The hero uses the Braga-Kribitz
-design system: surface `#E6E6E6`, ink `#282828`, Söhne 800 display / Söhne Mono labels, one orange
-`#FA6400` element (the status dot), 1 px hairlines, 8 px grid, no photography, gradients, or decoration.
+Every project has the same visual **slots**, not the same image. The hero uses the Braga design
+system v2.1 (banner contract D-051 in braga-portfolio-v2 `design-system/DECISIONS.md`; values from its
+`tokens.json`): `surface` ground, BRAGA wordmark in BKribitz 800, title in BKribitz 700, labels in
+BKribitz Mono, the project's status as its D-029 square in `ink`, a 1 px `ink` rule opening the facts
+row, 8 px grid, **no accent** (a banner has no earned figure and no action), no photography, gradients,
+or decoration. Badges use the neutrals (D-054) and Mermaid diagrams the site's theme (D-052); the
+recommended checks `identity.banner_design`, `identity.badge_colours` and `technical.diagram_design`
+report drift and the fixer repairs it.
 `readme_quality/hero.py` generates a banner from registry and repository facts only, with layout
 guardrails (wrap-and-shrink, line-length caps, no overlap, safe area, per-glyph font coverage, contrast
 ≥ 4.5, post-render pixel scan).

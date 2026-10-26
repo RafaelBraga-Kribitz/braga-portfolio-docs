@@ -19,7 +19,7 @@
 # Status vocabulary produced by the gate for every requirement:
 #   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
 
-version: "1.3.0"
+version: "1.4.0"
 standard: docs/README_STANDARD.md
 
 # Two ceilings, because raw line count punishes exactly the content the standard wants more of.
@@ -415,6 +415,36 @@ requirements:
     remediation: manual
     human_escalation: null
     notes: "bk-viz's own acceptance test: if two charts from different repositories do not look like siblings, the theme is not applied. Adding the dependency is repository work, out of scope for the standard; this check only reports the gap."
+
+  - id: identity.banner_design
+    title: The generated banner is drawn on the current design system
+    applies_to: [all]
+    severity: recommended
+    check: banner_design
+    evidence: "When `banner: generated`, the banner's layout report (`<banner>.layout.json`, written by the generator) names the design-system version it was drawn with, and that version is the one in tokens.json (braga-portfolio-v2 design-system/DECISIONS.md D-051); NOT_APPLICABLE for a declared vanity banner"
+    remediation: auto
+    human_escalation: null
+    notes: "Added in 1.4.0 with design system v2.1. Promote to required once every registered repository passes it on two consecutive portfolio runs."
+
+  - id: identity.badge_colours
+    title: Badges carry the design system's neutrals
+    applies_to: [all]
+    severity: recommended
+    check: badge_colours
+    evidence: "Every shields.io badge in the identity zone has an ink label and an ink-2 message (D-054); GitHub's own workflow badge.svg is exempt"
+    remediation: auto
+    human_escalation: null
+    notes: "Added in 1.4.0. Status is a fact, not a traffic light. Promote with identity.banner_design."
+
+  - id: technical.diagram_design
+    title: Mermaid diagrams use the design-system theme
+    applies_to: [all]
+    severity: recommended
+    check: diagram_design
+    evidence: "Every ```mermaid block opens with the design-system %%{init}%% directive (the site's diagram theme, D-052), uses no colour outside it, and marks at most one node `accent`; NOT_APPLICABLE without a Mermaid block"
+    remediation: auto
+    human_escalation: null
+    notes: "Added in 1.4.0. The fixer rewrites the directive and the `node` / `accent` classDefs only; any other classDef (gitdiagram's tones) stays for an agent to remove with `readme_quality diagram`."
 
   - id: communication.figure_coverage
     title: The README shows the figures that carry the argument
