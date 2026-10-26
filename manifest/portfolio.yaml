@@ -189,7 +189,7 @@ projects:
     incomplete: true
     status: In development
     title: "Metric Driver-Tree Studio"
-    descriptor: "A driver-tree studio that keeps definitional identities, modelled elasticities, and untested beliefs apart. Phase 1 engine built; UI pending."
+    descriptor: "A driver-tree studio that keeps definitional identities, modelled elasticities, and untested beliefs apart, and ranks which guess to test first."
     banner: generated
     runtime: "TypeScript / Node 20"
     demo: static
