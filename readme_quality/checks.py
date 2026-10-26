@@ -862,12 +862,13 @@ def chart_theme(ctx: CheckContext) -> Result:
 def banner_design(ctx: CheckContext) -> Result:
     """A generated banner is drawn on the current design system (D-051); its layout report says which."""
     from . import brand
-    if (getattr(ctx.project, "banner", "generated") or "generated") != "generated":
-        return Result(NA, "the banner is a declared vanity image, not the generated one")
+    generated = (getattr(ctx.project, "banner", "generated") or "generated") == "generated"
     target = _norm(banner_target(ctx.project))
     if not (ctx.repo_dir / target).exists():
         return Result(NA, f"{target} does not exist yet (identity.hero reports it)")
     layout = brand.banner_layout(ctx.repo_dir, target)
+    if not generated and layout is None:
+        return Result(NA, "the banner is a declared vanity image with no generator layout report")
     if brand.banner_is_current(layout):
         return Result(PASS, f"{target}: {layout.get('design_system')}")
     drawn = (layout or {}).get("design_system") or "an earlier design system (no version in its layout report)"
