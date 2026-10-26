@@ -12,6 +12,7 @@ Replaced: the `%%{init}%%` directive, `classDef tone*`, and the `class … tone*
 """
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -35,33 +36,22 @@ SANS = "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-ser
 # `themeVariables` — verified by rendering both: themeVariables-only falls back to the page's
 # font, top-level applies. It is set in both places here because the two cover different
 # surfaces (node labels vs cluster titles) and neither placement is harmful.
-INIT = f"""%%{{init: {{
-  "theme": "base",
-  "fontFamily": "{SANS}",
-  "themeVariables": {{
-    "background": "{SURFACE}",
-    "primaryColor": "{NODE}",
-    "primaryTextColor": "{INK}",
-    "primaryBorderColor": "{INK}",
-    "secondaryColor": "{SURFACE}",
-    "secondaryTextColor": "{INK}",
-    "secondaryBorderColor": "{EDGE}",
-    "tertiaryColor": "{SURFACE}",
-    "tertiaryTextColor": "{INK}",
-    "tertiaryBorderColor": "{CLUSTER}",
-    "lineColor": "{EDGE}",
-    "textColor": "{INK}",
-    "mainBkg": "{NODE}",
-    "nodeBorder": "{INK}",
-    "clusterBkg": "{SURFACE}",
-    "clusterBorder": "{CLUSTER}",
-    "edgeLabelBackground": "{SURFACE}",
-    "titleColor": "{INK}",
-    "fontFamily": "{SANS}",
-    "fontSize": "14px"
-  }},
-  "flowchart": {{ "curve": "linear", "htmlLabels": true, "padding": 8 }}
-}}}}%%"""
+_THEME = {
+    "theme": "base",
+    "fontFamily": SANS,
+    "themeVariables": {
+        "background": SURFACE, "primaryColor": NODE, "primaryTextColor": INK, "primaryBorderColor": INK,
+        "secondaryColor": SURFACE, "secondaryTextColor": INK, "secondaryBorderColor": EDGE,
+        "tertiaryColor": SURFACE, "tertiaryTextColor": INK, "tertiaryBorderColor": CLUSTER,
+        "lineColor": EDGE, "textColor": INK, "mainBkg": NODE, "nodeBorder": INK,
+        "clusterBkg": SURFACE, "clusterBorder": CLUSTER, "edgeLabelBackground": SURFACE,
+        "titleColor": INK, "fontFamily": SANS, "fontSize": "14px",
+    },
+    "flowchart": {"curve": "linear", "htmlLabels": True, "padding": 8},
+}
+# One line: the directive costs a README one raw line per diagram, not 27 (a README's own
+# line ceiling, e.g. warehouse_humanoid_tco's F-215, counts raw lines inside fences).
+INIT = "%%{init: " + json.dumps(_THEME, separators=(",", ":")) + "}%%"
 
 CLASSDEFS = (f"classDef node fill:{NODE},stroke:{INK},stroke-width:1px,color:{INK}\n"
              f"classDef accent fill:{NODE},stroke:{ACCENT},stroke-width:1px,color:{INK}")
