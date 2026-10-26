@@ -859,6 +859,43 @@ def chart_theme(ctx: CheckContext) -> Result:
                         "(bk-viz README: \"If two charts from different repos do not look like siblings, the theme is not applied\")")
 
 
+def banner_design(ctx: CheckContext) -> Result:
+    """A generated banner is drawn on the current design system (D-051); its layout report says which."""
+    from . import brand
+    generated = (getattr(ctx.project, "banner", "generated") or "generated") == "generated"
+    target = _norm(banner_target(ctx.project))
+    if not (ctx.repo_dir / target).exists():
+        return Result(NA, f"{target} does not exist yet (identity.hero reports it)")
+    layout = brand.banner_layout(ctx.repo_dir, target)
+    if not generated and layout is None:
+        return Result(NA, "the banner is a declared vanity image with no generator layout report")
+    if brand.banner_is_current(layout):
+        return Result(PASS, f"{target}: {layout.get('design_system')}")
+    drawn = (layout or {}).get("design_system") or "an earlier design system (no version in its layout report)"
+    return Result(FAIL, f"{target} was drawn with {drawn}; the system is braga {brand.DS_VERSION}", auto_fixable=True)
+
+
+def badge_colours(ctx: CheckContext) -> Result:
+    """Shields badges carry the neutrals: label ink, message ink-2 (D-054)."""
+    from . import brand
+    bad = brand.badge_problems(ctx.readme.identity)
+    if bad:
+        return Result(FAIL, f"{len(bad)} badge(s) in a judgement colour or without the ink label", evidence=bad[:6], auto_fixable=True)
+    return Result(PASS, "badges in the neutrals")
+
+
+def diagram_design(ctx: CheckContext) -> Result:
+    """Every Mermaid block on the site's diagram theme, one accent at most (D-052)."""
+    from . import brand
+    text = ctx.readme.text if hasattr(ctx.readme, "text") else ""
+    if "```mermaid" not in text:
+        return Result(NA, "no Mermaid diagram in the README")
+    problems = brand.mermaid_problems(text)
+    if problems:
+        return Result(FAIL, "; ".join(problems[:3]), evidence=problems, auto_fixable=True)
+    return Result(PASS, "every Mermaid block on the design-system theme")
+
+
 def _figures_on_disk(ctx: CheckContext) -> tuple[int, str]:
     """(count, directory) for the first configured figure directory that holds result figures.
 
@@ -1120,6 +1157,9 @@ CHECKS = {
     "alt_text": alt_text,
     "alt_distinct": alt_distinct,
     "chart_theme": chart_theme,
+    "banner_design": banner_design,
+    "badge_colours": badge_colours,
+    "diagram_design": diagram_design,
     "figure_coverage": figure_coverage,
     "chart_caption": chart_caption,
     "message_heading": message_heading,

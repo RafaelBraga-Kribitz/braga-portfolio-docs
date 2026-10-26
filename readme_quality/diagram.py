@@ -1,4 +1,4 @@
-"""Restyle a gitdiagram Mermaid graph into the Braga-Kribitz design system.
+"""Restyle a gitdiagram Mermaid graph into the Braga design system (v2.1, D-052).
 
 The transformation blocks/architecture-mermaid.md describes as instructions for an agent,
 done as code instead, because it is fully deterministic and because an agent doing it by
@@ -16,14 +16,20 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import design
 from .parse import GITHUB_BLOB_RE, MERMAID_CLICK_RE, is_external
 
-# Design-system tokens (readme_quality/hero.py): surface, ink, hairline, the one accent.
-SURFACE = "#E6E6E6"
-INK = "#282828"
-HAIRLINE = "#A0A0A0"
-ACCENT = "#FA6400"
-MONO = "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+# Design-system tokens (braga-portfolio-v2 design-system/DECISIONS.md §3.2, D-052), read from
+# tokens.json: the same theme the site draws its own Mermaid diagrams with
+# (src/lib/vault/mermaid.mjs, components.css "diagram").
+_C = design.color("light")
+SURFACE = _C["surface"]          # ground, clusters, edge labels
+NODE = _C["surface-2"]           # node fill
+INK = _C["ink"]                  # text and node borders
+EDGE = _C["ink-2"]               # edges
+CLUSTER = _C["rule-c"]           # cluster borders
+ACCENT = _C["accent-01"]         # one node border per diagram (D-036)
+SANS = "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
 
 # `fontFamily` must sit at the TOP LEVEL of the init config. Mermaid 11 ignores it under
 # `themeVariables` — verified by rendering both: themeVariables-only falls back to the page's
@@ -31,34 +37,34 @@ MONO = "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
 # surfaces (node labels vs cluster titles) and neither placement is harmful.
 INIT = f"""%%{{init: {{
   "theme": "base",
-  "fontFamily": "{MONO}",
+  "fontFamily": "{SANS}",
   "themeVariables": {{
     "background": "{SURFACE}",
-    "primaryColor": "{SURFACE}",
+    "primaryColor": "{NODE}",
     "primaryTextColor": "{INK}",
-    "primaryBorderColor": "{HAIRLINE}",
+    "primaryBorderColor": "{INK}",
     "secondaryColor": "{SURFACE}",
     "secondaryTextColor": "{INK}",
-    "secondaryBorderColor": "{HAIRLINE}",
+    "secondaryBorderColor": "{EDGE}",
     "tertiaryColor": "{SURFACE}",
     "tertiaryTextColor": "{INK}",
-    "tertiaryBorderColor": "{HAIRLINE}",
-    "lineColor": "{HAIRLINE}",
+    "tertiaryBorderColor": "{CLUSTER}",
+    "lineColor": "{EDGE}",
     "textColor": "{INK}",
-    "mainBkg": "{SURFACE}",
-    "nodeBorder": "{HAIRLINE}",
+    "mainBkg": "{NODE}",
+    "nodeBorder": "{INK}",
     "clusterBkg": "{SURFACE}",
-    "clusterBorder": "{HAIRLINE}",
+    "clusterBorder": "{CLUSTER}",
     "edgeLabelBackground": "{SURFACE}",
     "titleColor": "{INK}",
-    "fontFamily": "{MONO}",
-    "fontSize": "13px"
+    "fontFamily": "{SANS}",
+    "fontSize": "14px"
   }},
   "flowchart": {{ "curve": "linear", "htmlLabels": true, "padding": 8 }}
 }}}}%%"""
 
-CLASSDEFS = (f"classDef node fill:{SURFACE},stroke:{HAIRLINE},stroke-width:1px,color:{INK}\n"
-             f"classDef accent fill:{SURFACE},stroke:{ACCENT},stroke-width:1px,color:{INK}")
+CLASSDEFS = (f"classDef node fill:{NODE},stroke:{INK},stroke-width:1px,color:{INK}\n"
+             f"classDef accent fill:{NODE},stroke:{ACCENT},stroke-width:1px,color:{INK}")
 
 FLOWCHART_RE = re.compile(r"^\s*(flowchart|graph)\s+(TD|TB|LR|RL|BT)\s*$", re.M)
 CLASSDEF_RE = re.compile(r"^\s*classDef\s+\S+.*$", re.M)

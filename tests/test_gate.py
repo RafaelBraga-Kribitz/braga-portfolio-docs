@@ -495,7 +495,10 @@ def test_restyle_changes_presentation_and_nothing_else():
     assert out.count("classDef ") == 2                             # one neutral class, one accent
     assert "class node_ingest,node_features node" in out
     assert out.rstrip().endswith("class node_analyst accent")
-    assert "#FA6400" in out and "#E6E6E6" in out and "#A0A0A0" in out
+    from readme_quality import design
+    c = design.color("light")
+    assert c["accent-01"] in out and c["surface-2"] in out and c["ink"] in out   # D-052: the site's diagram theme
+    assert "#FA6400" not in out and "#E6E6E6" not in out                        # v1 orange and grey are gone
 
 
 def test_restyle_puts_the_orange_on_exactly_one_node():
@@ -519,11 +522,12 @@ def test_restyle_direction_override_moves_no_graph_content():
 def test_init_directive_sets_fontFamily_at_the_top_level():
     """Mermaid 11 ignores fontFamily under themeVariables — verified by rendering both."""
     import json
-    from readme_quality.diagram import INIT, MONO, restyle
+    from readme_quality.diagram import INIT, SANS, restyle
     cfg = json.loads(re.search(r"%%\{init:\s*(\{.*\})\s*\}%%", INIT, re.S).group(1))
-    assert cfg.get("fontFamily") == MONO, "fontFamily must be top-level or the labels fall back"
-    assert cfg["themeVariables"].get("fontFamily") == MONO
-    assert MONO in restyle(RAW_GITDIAGRAM, "node_analyst")
+    assert cfg.get("fontFamily") == SANS, "fontFamily must be top-level or the labels fall back"
+    assert cfg["themeVariables"].get("fontFamily") == SANS
+    assert SANS.startswith("BKribitz")
+    assert SANS in restyle(RAW_GITDIAGRAM, "node_analyst")
 
 
 def test_shipped_mermaid_blocks_all_set_fontFamily_at_the_top_level():

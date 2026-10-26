@@ -6,12 +6,20 @@
 #   make readme-hero REPO=..    (re)generate the design-system hero banner for one checkout
 #   make readme-check           self-check: tests + this repository's own README
 #   make test                   run the test suite
+#   make design-sync            refresh readme_quality/design/ from ../braga-portfolio-v2 (or BRAGA_DS)
 PYTHON ?= python
 REPOS_ROOT ?= $(if $(BRAGA_REPOS_ROOT),$(BRAGA_REPOS_ROOT),..)
 REPO ?=
 FONTS ?= $(BK_FONTS)
 
-.PHONY: install readme-audit readme-fix readme-hero readme-check readme-portfolio test
+DS ?= $(if $(BRAGA_DS),$(BRAGA_DS),../braga-portfolio-v2)
+
+.PHONY: design-sync install readme-audit readme-fix readme-hero readme-check readme-portfolio test
+
+design-sync:  ## refresh the vendored design system from a braga-portfolio-v2 checkout
+	cp "$(DS)/design-system/tokens.json" readme_quality/design/tokens.json
+	for f in BKribitz-400 BKribitz-700 BKribitz-800 BKribitzMono-400; do cp "$(DS)/public/fonts/$$f.woff2" readme_quality/design/fonts/; done
+	cp "$(DS)/public/fonts/licenses/OFL-Geist.txt" "$(DS)/public/fonts/licenses/NOTICE.md" readme_quality/design/fonts/
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt

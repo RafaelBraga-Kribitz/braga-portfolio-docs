@@ -17,49 +17,49 @@
        - every `class …, tone*` line: rewrite so every node is in `node`, and at most ONE
          node is additionally in `accent`
   4. Choose the accent node deliberately: the entry point a reader starts from, or the
-     output the decision is read off. One per diagram, never two. The orange is the only
-     colour in the system and it is spent once.
+     output the decision is read off. One per diagram, never two: one accent per figure
+     (D-036), and it is the only colour the diagram carries.
   5. Put the generator's workflow paragraph ABOVE the diagram as prose, and the
      provenance line immediately BELOW it.
 
   WHY NO COLOUR CODING
 
   gitdiagram ships seven pastel `classDef` tones and colour-codes the groups with them.
-  The Braga-Kribitz system has no categorical colour ramp — bk-viz defines none on purpose
-  ("No categorical colour ramp. The system defines none on purpose"). Subgraph grouping,
-  not colour, is the structural device: the boxes already carry the grouping the tones were
+  The Braga design system keeps its categorical hues for chart marks (D-053); a diagram
+  is not coloured by group (D-052). Subgraph grouping, not colour, is the structural device: the boxes already carry the grouping the tones were
   duplicating, so dropping the tones loses no information.
 
-  Tokens (readme_quality/hero.py): surface #E6E6E6 · ink #282828 · secondary ink #4A4A4A
-  · hairline mid grey #A0A0A0 at 1px · accent orange #FA6400 · no gradients, no shadows,
-  no rounding, no photography.
+  Tokens (tokens.json via readme_quality/design, D-052 — the site's own diagram theme):
+  ground surface · nodes surface-2 with a 1px ink border · edges ink-2 · clusters rule-c ·
+  one node bordered in accent-01 · BKribitz · no gradients, no shadows, no rounding.
+  `python -m readme_quality diagram` writes exactly this; do not copy hex values by hand.
 -->
 
 ```mermaid
 %%{init: {
   "theme": "base",
-  "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace",
+  "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
   "themeVariables": {
-    "background": "#E6E6E6",
-    "primaryColor": "#E6E6E6",
-    "primaryTextColor": "#282828",
-    "primaryBorderColor": "#A0A0A0",
-    "secondaryColor": "#E6E6E6",
-    "secondaryTextColor": "#282828",
-    "secondaryBorderColor": "#A0A0A0",
-    "tertiaryColor": "#E6E6E6",
-    "tertiaryTextColor": "#282828",
-    "tertiaryBorderColor": "#A0A0A0",
-    "lineColor": "#A0A0A0",
-    "textColor": "#282828",
-    "mainBkg": "#E6E6E6",
-    "nodeBorder": "#A0A0A0",
-    "clusterBkg": "#E6E6E6",
-    "clusterBorder": "#A0A0A0",
-    "edgeLabelBackground": "#E6E6E6",
-    "titleColor": "#282828",
-    "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace",
-    "fontSize": "13px"
+    "background": "#E4E6EA",
+    "primaryColor": "#DCDEE2",
+    "primaryTextColor": "#26282C",
+    "primaryBorderColor": "#26282C",
+    "secondaryColor": "#E4E6EA",
+    "secondaryTextColor": "#26282C",
+    "secondaryBorderColor": "#5A5C61",
+    "tertiaryColor": "#E4E6EA",
+    "tertiaryTextColor": "#26282C",
+    "tertiaryBorderColor": "#C2C4CA",
+    "lineColor": "#5A5C61",
+    "textColor": "#26282C",
+    "mainBkg": "#DCDEE2",
+    "nodeBorder": "#26282C",
+    "clusterBkg": "#E4E6EA",
+    "clusterBorder": "#C2C4CA",
+    "edgeLabelBackground": "#E4E6EA",
+    "titleColor": "#26282C",
+    "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
   },
   "flowchart": { "curve": "linear", "htmlLabels": true, "padding": 8 }
 }}%%
@@ -84,8 +84,8 @@ click node_example "https://github.com/OWNER/REPO/blob/BRANCH/path/to/file.py"
 %% These two lines replace gitdiagram's seven `classDef tone*` lines.
 %% ---------------------------------------------------------------------------
 
-classDef node fill:#E6E6E6,stroke:#A0A0A0,stroke-width:1px,color:#282828
-classDef accent fill:#E6E6E6,stroke:#FA6400,stroke-width:1px,color:#282828
+classDef node fill:#DCDEE2,stroke:#26282C,stroke-width:1px,color:#26282C
+classDef accent fill:#DCDEE2,stroke:#2F4BE0,stroke-width:1px,color:#26282C
 
 class node_example,node_actor node
 class node_actor accent

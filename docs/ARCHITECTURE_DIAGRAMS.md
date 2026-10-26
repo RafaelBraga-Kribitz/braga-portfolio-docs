@@ -55,7 +55,7 @@ is what to re-verify, and the procedure in §3 becomes automatable.
    ```
 
    Omit `--accent` and it lists the candidates (nodes with no incoming edge, nodes with no outgoing
-   edge) and exits without guessing — which node carries the orange is a per-project decision. The
+   edge) and exits without guessing — which node carries the accent is a per-project decision. The
    tool replaces only the `%%{init}%%`, `classDef` and `class` lines, keeps every `subgraph`, node,
    edge, edge label and `click` line byte-for-byte, and verifies every click target against the
    checkout as it goes. A hand transformation is a transformation that can silently change the graph;
@@ -217,14 +217,15 @@ Raw gitdiagram output ships seven decorative `classDef` tones — `toneBlue`, `t
 `toneRose`, `toneIndigo`, `toneTeal`, `toneNeutral` — in pastel fills with coloured strokes and coloured
 text, one tone per subgraph.
 
-That contradicts the design system on every axis: surface `#E6E6E6`, ink `#282828`, 1 px mid-grey
-(`#A0A0A0`) hairlines, no decoration, and orange `#FA6400` spent on exactly one element. More
-specifically, the system **has no categorical colour ramp** — `bk-viz` states it as a limitation: *"No
-categorical colour ramp. The system defines none on purpose."*
+That contradicts the design system on every axis. Design system v2.1 (D-052 in braga-portfolio-v2
+`design-system/DECISIONS.md`) draws a diagram the way the site draws its own: `surface` ground, nodes in
+`surface-2` with a 1 px `ink` border, `ink-2` edges, `rule-c` cluster borders, BKribitz, no decoration,
+and the ultramarine accent (`accent-01`) spent on exactly one node. Its categorical hues are for chart
+marks (D-053), never for grouping the boxes of a diagram.
 
 **Subgraph grouping replaces colour as the structural device.** The `subgraph` boxes already express the
 grouping the seven tones were duplicating, so removing the tones removes a redundant encoding, not
-information. The single orange node is the only categorical signal the diagram gets, and it is spent on
+information. The single accent node is the only colour signal the diagram gets, and it is spent on
 the entry point or on the output the decision is read off — chosen per project, one node, never two.
 
 ## 7. Licence and vendoring

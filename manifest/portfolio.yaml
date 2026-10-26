@@ -221,6 +221,16 @@ projects:
       respective rights holders and are kept here for study only; no licence to copy
       or redistribute them is granted by this repository.
 
+  - name: brazil-2026-election-forecast
+    github: RafaelBraga-Kribitz/brazil-2026-election-forecast
+    path: brazil-2026-election-forecast
+    type: analytical
+    status: In development
+    title: "Brazil 2026 Election Forecast"
+    tagline: "Pre-register. Backtest. Score."
+    descriptor: "Pre-registered Bayesian aggregation of public polls, validated leave-one-election-out on 2014-2022 and scored against the 2026 result."
+    banner: generated
+
   - name: braga-portfolio-docs
     github: RafaelBraga-Kribitz/braga-portfolio-docs
     path: braga-portfolio-docs

@@ -3,6 +3,7 @@
   python -m readme_quality audit    --repo PATH | --name NAME | --all   [--json] [--verbose]
   python -m readme_quality fix      --repo PATH | --name NAME | --all   [--dry-run]
   python -m readme_quality hero     --repo PATH | --name NAME [--out PATH] [--fonts DIR]
+  python -m readme_quality theme    [FILE.md ...] [--check]
   python -m readme_quality diagram  --repo PATH | --name NAME --input RAW.mmd [--accent NODE] [--direction TD|LR] [--out PATH]
   python -m readme_quality detect   PATH
   python -m readme_quality explain  REQUIREMENT_ID
@@ -129,6 +130,33 @@ def cmd_explain(args) -> int:
     return 0
 
 
+def cmd_theme(args) -> int:
+    """The design-system Mermaid theme (D-052): print it, or apply it to every block of Markdown files."""
+    from . import brand
+    from .diagram import CLASSDEFS, INIT
+    if not args.files:
+        print(INIT)
+        print("%% one neutral class, one accent on a single node (D-036):")
+        print(CLASSDEFS)
+        return 0
+    status = 0
+    for f in args.files:
+        p = Path(f)
+        text = p.read_text(encoding="utf-8")
+        new = brand.restyle_mermaid_blocks(text)
+        left = brand.mermaid_problems(new)
+        if new != text and not args.check:
+            p.write_text(new, encoding="utf-8")
+            print(f"{f}: Mermaid restyled")
+        elif new != text:
+            print(f"{f}: Mermaid not on the design-system theme")
+            status = 1
+        for prob in left:
+            print(f"{f}: {prob}")
+            status = 1
+    return status
+
+
 def cmd_diagram(args) -> int:
     """Restyle a raw gitdiagram graph and verify its click targets before it is committed."""
     from .diagram import parse_graph, restyle, verify_clicks
@@ -211,7 +239,7 @@ def main(argv=None) -> int:
     a.set_defaults(fn=cmd_audit)
 
     f = sub.add_parser("fix", help="apply safe automatic remediation, then re-run the gate"); sel(f)
-    f.add_argument("--dry-run", action="store_true"); f.add_argument("--fonts", help="Söhne font directory")
+    f.add_argument("--dry-run", action="store_true"); f.add_argument("--fonts", help="folder holding the BKribitz faces (default: design-system checkout or the vendored copy)")
     f.add_argument("--verbose", "-v", action="store_true")
     f.set_defaults(fn=cmd_fix)
 
@@ -227,11 +255,16 @@ def main(argv=None) -> int:
 
     dg = sub.add_parser("diagram", help="restyle a raw gitdiagram graph to the design system and verify its click targets"); sel(dg)
     dg.add_argument("--input", required=True, help="file holding the raw gitdiagram Mermaid graph")
-    dg.add_argument("--accent", help="the one node that carries the orange; omit to list candidates")
+    dg.add_argument("--accent", help="the one node that carries the accent; omit to list candidates")
     dg.add_argument("--direction", choices=["TD", "TB", "LR", "RL", "BT"],
                     help="override the generator's flowchart direction (layout only; the graph is unchanged)")
     dg.add_argument("--out", help="write the fenced block here instead of stdout")
     dg.set_defaults(fn=cmd_diagram)
+
+    th = sub.add_parser("theme", help="print the design-system Mermaid theme, or apply it to Markdown files")
+    th.add_argument("files", nargs="*", help="Markdown files whose ```mermaid blocks to restyle in place")
+    th.add_argument("--check", action="store_true", help="report instead of rewriting; exit 1 on drift")
+    th.set_defaults(fn=cmd_theme)
 
     pf = sub.add_parser("portfolio", help="audit (or fix) every registered repository")
     pf.add_argument("--fix", action="store_true"); pf.add_argument("--dry-run", action="store_true")

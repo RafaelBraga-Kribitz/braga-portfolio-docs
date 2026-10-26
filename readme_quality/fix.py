@@ -34,8 +34,9 @@ from .repofacts import RepoFacts, collect
 HERE = Path(__file__).resolve().parent.parent
 BLOCKS = HERE / "blocks"
 
-STATUS_COLORS = {"Complete": "brightgreen", "Maintained": "brightgreen", "Functional": "green",
-                 "In development": "blue", "Foundation": "orange", "Prototype": "orange", "Archived": "lightgrey"}
+# D-054: badges carry the neutrals, never a judgement colour (status is a fact, not a traffic light)
+from .brand import BADGE_LABEL, BADGE_MESSAGE
+NEUTRAL = f"{BADGE_MESSAGE}?labelColor={BADGE_LABEL}"
 
 LICENSE_TEXTS = {
     "MIT": "mit.txt", "Apache-2.0": "apache-2.0.txt", "ISC": "isc.txt",
@@ -48,7 +49,7 @@ def block(block_name: str, **vars) -> str:
     return Template(text).safe_substitute(**vars).rstrip("\n") + "\n"
 
 
-def _shield(label: str, value: str, color: str) -> str:
+def _shield(label: str, value: str, color: str = NEUTRAL) -> str:
     def enc(s: str) -> str:
         return s.replace("-", "--").replace("_", "__").replace(" ", "%20")
     return f"https://img.shields.io/badge/{enc(label)}-{enc(value)}-{color}"
@@ -321,18 +322,18 @@ class Fixer:
         py = facts.python_requires or facts.python_version_file
         if py and not re.search(r"badge/python", ident, re.I):
             ver = re.sub(r"^[>=~^]+", "", py).strip()
-            new.append(f"[![Python {ver}](https://img.shields.io/badge/python-{ver.replace('-', '--')}-blue)](pyproject.toml)" if facts.has_pyproject else f"[![Python {ver}](https://img.shields.io/badge/python-{ver}-blue)](.python-version)")
+            new.append(f"[![Python {ver}](https://img.shields.io/badge/python-{ver.replace('-', '--')}-{NEUTRAL})](pyproject.toml)" if facts.has_pyproject else f"[![Python {ver}](https://img.shields.io/badge/python-{ver}-{NEUTRAL})](.python-version)")
         elif facts.node_engine and not re.search(r"badge/node", ident, re.I):
-            new.append(f"[![Node {facts.node_engine}](https://img.shields.io/badge/node-{facts.node_engine.replace('>=', '%3E%3D')}-green)](package.json)")
+            new.append(f"[![Node {facts.node_engine}](https://img.shields.io/badge/node-{facts.node_engine.replace('>=', '%3E%3D')}-{NEUTRAL})](package.json)")
         if facts.license_file and not re.search(r"licen[cs]e", ident, re.I):
-            new.append(f"[![License: {facts.license_id}]({_shield('license', facts.license_id, 'green')})]({facts.license_file.name})")
+            new.append(f"[![License: {facts.license_id}]({_shield('license', facts.license_id)})]({facts.license_file.name})")
         elif facts.license_file and re.search(r"badge/licen[cs]e-([A-Za-z0-9.]+)", ident, re.I):
             m = re.search(r"badge/licen[cs]e-([A-Za-z0-9.]+)", ident, re.I)
             claimed = m.group(1)
             if claimed.lower() != C._license_name(facts.license_id).lower() and facts.license_id != "UNKNOWN":
                 text = re.sub(r"\[!\[License:[^\]]*\]\([^)]*\)\]\([^)]*\)\s*\n?", "", text, count=1)
                 rd = parse(text); ident = rd.identity
-                new.append(f"[![License: {facts.license_id}]({_shield('license', facts.license_id, 'green')})]({facts.license_file.name})")
+                new.append(f"[![License: {facts.license_id}]({_shield('license', facts.license_id)})]({facts.license_file.name})")
                 self.changes.append(f"identity.badges: replaced license badge ({claimed} -> {facts.license_id})")
         if not facts.license_file and re.search(r"badge/licen[cs]e-", ident, re.I):
             text = re.sub(r"\[!\[License:[^\]]*\]\([^)]*\)\]\([^)]*\)\s*\n?", "", text, count=1)
@@ -340,7 +341,7 @@ class Fixer:
             self.changes.append("identity.badges: removed license badge (no LICENSE file)")
         if self.project.status and not re.search(r"badge/status-", ident, re.I):
             st = self.project.status
-            new.append(f"[![Status: {st}]({_shield('status', st, STATUS_COLORS.get(st, 'blue'))})](#status)")
+            new.append(f"[![Status: {st}]({_shield('status', st, NEUTRAL)})](#status)")
         if not new:
             return text
         lines = text.split("\n")
@@ -630,6 +631,23 @@ class Fixer:
         self.changes.append("analytical.epistemic: inserted the tag legend under the Data section")
         return "\n".join(lines)
 
+    # ---- design system (D-051, D-052, D-054) ----------------------------------
+    def fix_design(self, text: str) -> str:
+        """Presentation only: a banner drawn on the current design system, neutral badges,
+        Mermaid on the site's theme. Runs on every README, like the chart alt text."""
+        from . import brand
+        if (getattr(self.project, "banner", "generated") or "generated") == "generated":
+            target = self._banner_target()
+            if (self.repo_dir / target).exists() and not brand.banner_is_current(brand.banner_layout(self.repo_dir, target)):
+                self.regenerate_banner()
+        new = brand.restyle_mermaid_blocks(brand.recolour_badges(text))
+        if new != text:
+            if brand.badge_problems(text):
+                self.changes.append("identity.badge_colours: shields badges set to the neutrals (D-054)")
+            if brand.mermaid_problems(text) != brand.mermaid_problems(new):
+                self.changes.append("technical.diagram_design: Mermaid blocks set to the design-system theme (D-052)")
+        return new
+
     # ------------------------------------------------------------ driver
     def run(self, max_rounds: int = 3) -> tuple[Report, list[str]]:
         report = audit_repo(self.repo_dir, self.project, self.manifest, self.registry)
@@ -638,7 +656,7 @@ class Fixer:
             return report, self.changes
         # runs whether or not anything is failing: communication.* are recommended, so they never
         # appear in `failing`, and a chart's alt text is worth repairing on a README that already passes
-        text = self.fix_chart_alt(self._read())
+        text = self.fix_design(self.fix_chart_alt(self._read()))
         if text != self._read():
             self._write(text, "README.md updated")
             report = audit_repo(self.repo_dir, self.project, self.manifest, self.registry)

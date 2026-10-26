@@ -42,13 +42,33 @@
      put `accent` on exactly one node. Procedure: docs/ARCHITECTURE_DIAGRAMS.md -->
 
 ```mermaid
-%%{init: {"theme": "base", "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace", "themeVariables": {
-  "background": "#E6E6E6", "primaryColor": "#E6E6E6", "primaryTextColor": "#282828",
-  "primaryBorderColor": "#A0A0A0", "lineColor": "#A0A0A0", "textColor": "#282828",
-  "mainBkg": "#E6E6E6", "nodeBorder": "#A0A0A0", "clusterBkg": "#E6E6E6",
-  "clusterBorder": "#A0A0A0", "edgeLabelBackground": "#E6E6E6", "titleColor": "#282828",
-  "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace", "fontSize": "13px"
-}, "flowchart": {"curve": "linear", "htmlLabels": true, "padding": 8}}}%%
+%%{init: {
+  "theme": "base",
+  "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
+  "themeVariables": {
+    "background": "#E4E6EA",
+    "primaryColor": "#DCDEE2",
+    "primaryTextColor": "#26282C",
+    "primaryBorderColor": "#26282C",
+    "secondaryColor": "#E4E6EA",
+    "secondaryTextColor": "#26282C",
+    "secondaryBorderColor": "#5A5C61",
+    "tertiaryColor": "#E4E6EA",
+    "tertiaryTextColor": "#26282C",
+    "tertiaryBorderColor": "#C2C4CA",
+    "lineColor": "#5A5C61",
+    "textColor": "#26282C",
+    "mainBkg": "#DCDEE2",
+    "nodeBorder": "#26282C",
+    "clusterBkg": "#E4E6EA",
+    "clusterBorder": "#C2C4CA",
+    "edgeLabelBackground": "#E4E6EA",
+    "titleColor": "#26282C",
+    "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  },
+  "flowchart": { "curve": "linear", "htmlLabels": true, "padding": 8 }
+}}%%
 flowchart TD
 
 subgraph group_data["<!-- TEMPLATE: group -->"]
@@ -59,8 +79,8 @@ node_source -->|"<!-- TEMPLATE: edge label -->"| node_model
 
 click node_source "https://github.com/<!-- TEMPLATE: owner/repo -->/blob/main/<!-- TEMPLATE: path -->"
 
-classDef node fill:#E6E6E6,stroke:#A0A0A0,stroke-width:1px,color:#282828
-classDef accent fill:#E6E6E6,stroke:#FA6400,stroke-width:1px,color:#282828
+classDef node fill:#DCDEE2,stroke:#26282C,stroke-width:1px,color:#26282C
+classDef accent fill:#DCDEE2,stroke:#2F4BE0,stroke-width:1px,color:#26282C
 ```
 
 <!-- TEMPLATE: provenance, per blocks/architecture-provenance.md. Name the generator, the commit it was

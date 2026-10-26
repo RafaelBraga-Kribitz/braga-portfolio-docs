@@ -3,9 +3,9 @@
 ![BRAGA README Quality Gate — the portfolio documentation contract, its machine-readable manifest, the gate, the fixer, and the hero generator](docs/assets/hero.png)
 
 [![README quality gate](https://github.com/RafaelBraga-Kribitz/braga-portfolio-docs/actions/workflows/readme-quality.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/braga-portfolio-docs/actions/workflows/readme-quality.yml)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](requirements.txt)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status: Maintained](https://img.shields.io/badge/status-Maintained-brightgreen)](#status)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-5A5C61?labelColor=26282C)](requirements.txt)
+[![License: MIT](https://img.shields.io/badge/license-MIT-5A5C61?labelColor=26282C)](LICENSE)
+[![Status: Maintained](https://img.shields.io/badge/status-Maintained-5A5C61?labelColor=26282C)](#status)
 
 **Status:** Maintained
 
@@ -17,11 +17,11 @@ The standard says what "great" means for a README of a given project type. A mac
 
 ```text
 Standard  docs/README_STANDARD.md      what "great" means, per project type
-Manifest  manifest/requirements.yaml   52 requirement ids, severity, check, remediation, escalation (v1.3.0)
+Manifest  manifest/requirements.yaml   55 requirement ids, severity, check, remediation, escalation (v1.4.0)
 Registry  manifest/portfolio.yaml      declared type, status, hero, demo, license, diagram facts per project
 Gate      readme_quality.audit         PASS / PASS_WITH_EXCELLENCE / NOT_APPLICABLE / WARN / FAIL / BLOCKED_HUMAN
 Fixer     readme_quality.fix           safe remediation from evidence only
-Generator readme_quality.hero          Braga-Kribitz design-system banner with programmatic guardrails
+Generator readme_quality.hero          design-system v2.1 banner (D-051) with programmatic guardrails
 Diagram   readme_quality.diagram       gitdiagram graph -> design system; click targets verified
 Blocks    blocks/                      canonical author, license, status, legend, audience, structure blocks
 Templates templates/                   analytical, library, framework, interactive, foundation
@@ -51,52 +51,52 @@ BRAGA_REPOS_ROOT=.. python -m readme_quality portfolio             # every regis
 make test                                                          # the gate's own tests
 ```
 
-`make readme-audit`, `make readme-fix`, `make readme-hero REPO=…`, and `make readme-check` wrap the same commands. Söhne fonts are picked up from `BK_FONTS` or a sibling `braga-design-system-template/public/fonts`; without them the hero falls back to a bold sans and a mono face and says so in its layout report.
+`make readme-audit`, `make readme-fix`, `make readme-hero REPO=…`, and `make readme-check` wrap the same commands. The design system comes from `tokens.json` and the BKribitz faces of [braga-portfolio-v2](https://github.com/RafaelBraga-Kribitz/braga-portfolio-v2/tree/main/design-system) (v2.1): a sibling checkout or `BRAGA_DS` wins, otherwise the snapshot vendored in `readme_quality/design/` (SIL OFL 1.1, licence alongside) is used; `make design-sync` refreshes it, and a test fails while it has drifted from a sibling checkout.
 
 ## What it enforces
 
 | Family | Requirement ids | Gate effect |
 |---|---|---|
-| Identity | `identity.h1` `identity.hero` `identity.badges` `identity.problem` `identity.status_line` | required |
+| Identity | `identity.h1` `identity.hero` `identity.badges` `identity.problem` `identity.status_line` (`identity.banner_design`, `identity.badge_colours` recommended) | required / WARN |
 | Executive answer and evidence | `executive.summary` `evidence.primary` `evidence.see_it_running` (`evidence.demo_motion`, `evidence.live_demo` recommended) | required / WARN |
 | Navigation | `navigation.audience` | required |
 | Analytical | `analytical.decision` `.results` `.quantitative` `.uncertainty` `.data` `.epistemic` `.method` `.validation` `.production_data` | required, filtered by type and `incomplete` |
-| Technical | `technical.architecture` `technical.structure` `technical.reproduce` (`technical.stack`, `technical.architecture_links` recommended) | required / WARN |
+| Technical | `technical.architecture` `technical.structure` `technical.reproduce` (`technical.stack`, `technical.architecture_links`, `technical.diagram_design` recommended) | required / WARN |
 | Library and framework | `library.example` `library.contract` `library.api` (`library.install_pin` recommended) | required / WARN |
 | Honesty | `honesty.limitations` `honesty.placeholders` `honesty.hype` `honesty.status_section` `honesty.no_results_statement` (`honesty.falsification` recommended) | required / WARN |
 | Communication | `communication.alt_text` `.alt_distinct` `.chart_theme` `.figure_coverage` `.chart_caption` `.message_heading` | all recommended in v1.3; see the promotion table in the standard |
 | Links and metadata | `links.images` `links.internal` `meta.license_file` `meta.license_section` `meta.author` `meta.length` (`meta.length_total` recommended) | required; license ownership can be `BLOCKED_HUMAN` |
 | Excellence | `excellence.audience_personas` `excellence.claim_tracing` `excellence.why` `excellence.project_specific` | never fails; sections outside the vocabulary are preserved and reported |
 
-Acceptance test: `make test` runs 59 tests covering no README, a minimal README, compliant analytical, library, framework, interactive, and foundation READMEs, project-specific sections, broken images and links, placeholders and hype, license mismatches and blocked licenses, status mismatches, non-existent reproduce targets, both length ceilings and the rendered-line counting, the comparator in `analytical.quantitative`, every `communication.*` id with a passing, a failing, and a not-applicable case, architecture click-link integrity, the diagram restyler's direction override and graph-content preservation, the fixer's idempotence, and the hero guardrails. `python -m readme_quality audit --repo .` must pass on this repository.
+Acceptance test: `make test` runs 69 tests covering no README, a minimal README, compliant analytical, library, framework, interactive, and foundation READMEs, project-specific sections, broken images and links, placeholders and hype, license mismatches and blocked licenses, status mismatches, non-existent reproduce targets, both length ceilings and the rendered-line counting, the comparator in `analytical.quantitative`, every `communication.*` id with a passing, a failing, and a not-applicable case, architecture click-link integrity, the diagram restyler's direction override and graph-content preservation, the fixer's idempotence, the hero guardrails, and design-system v2.1 compliance (banner version and no accent, neutral badges, the site's Mermaid theme, the vendored tokens against a design-system checkout). `python -m readme_quality audit --repo .` must pass on this repository.
 
 ## Architecture
 
 ```mermaid
 %%{init: {
   "theme": "base",
-  "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace",
+  "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
   "themeVariables": {
-    "background": "#E6E6E6",
-    "primaryColor": "#E6E6E6",
-    "primaryTextColor": "#282828",
-    "primaryBorderColor": "#A0A0A0",
-    "secondaryColor": "#E6E6E6",
-    "secondaryTextColor": "#282828",
-    "secondaryBorderColor": "#A0A0A0",
-    "tertiaryColor": "#E6E6E6",
-    "tertiaryTextColor": "#282828",
-    "tertiaryBorderColor": "#A0A0A0",
-    "lineColor": "#A0A0A0",
-    "textColor": "#282828",
-    "mainBkg": "#E6E6E6",
-    "nodeBorder": "#A0A0A0",
-    "clusterBkg": "#E6E6E6",
-    "clusterBorder": "#A0A0A0",
-    "edgeLabelBackground": "#E6E6E6",
-    "titleColor": "#282828",
-    "fontFamily": "Söhne Mono, ui-monospace, SFMono-Regular, Menlo, monospace",
-    "fontSize": "13px"
+    "background": "#E4E6EA",
+    "primaryColor": "#DCDEE2",
+    "primaryTextColor": "#26282C",
+    "primaryBorderColor": "#26282C",
+    "secondaryColor": "#E4E6EA",
+    "secondaryTextColor": "#26282C",
+    "secondaryBorderColor": "#5A5C61",
+    "tertiaryColor": "#E4E6EA",
+    "tertiaryTextColor": "#26282C",
+    "tertiaryBorderColor": "#C2C4CA",
+    "lineColor": "#5A5C61",
+    "textColor": "#26282C",
+    "mainBkg": "#DCDEE2",
+    "nodeBorder": "#26282C",
+    "clusterBkg": "#E4E6EA",
+    "clusterBorder": "#C2C4CA",
+    "edgeLabelBackground": "#E4E6EA",
+    "titleColor": "#26282C",
+    "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
   },
   "flowchart": { "curve": "linear", "htmlLabels": true, "padding": 8 }
 }}%%
@@ -110,8 +110,8 @@ flowchart TD
     A --> P[readme_quality.portfolio<br/>table · JSON · report]
     T[templates/] -. starting structure .-> A
 
-classDef node fill:#E6E6E6,stroke:#A0A0A0,stroke-width:1px,color:#282828
-classDef accent fill:#E6E6E6,stroke:#FA6400,stroke-width:1px,color:#282828
+classDef node fill:#DCDEE2,stroke:#26282C,stroke-width:1px,color:#26282C
+classDef accent fill:#DCDEE2,stroke:#2F4BE0,stroke-width:1px,color:#26282C
 class S,M,R,F,H,P,T node
 class A accent
 ```
@@ -122,7 +122,7 @@ The gate reads the README and the repository (workflows, `pyproject.toml`, `pack
 
 - The gate checks structure, evidence slots, links, and honesty patterns. It cannot judge whether a method section is correct or a limitation is complete; that remains an agent's or a reviewer's job.
 - Superlative and placeholder detection is a word list; a claim can be unsupported without tripping it.
-- The hero generator renders text only, by design (the design system forbids photography and decoration). The Söhne trial fonts carry 68 glyphs, so punctuation outside that set renders in the fallback face at the same size.
+- The hero generator renders text only, by design (the design system forbids photography and decoration). A glyph BKribitz lacks renders in the fallback face at the same size, so nothing silently disappears.
 - License decisions are policy-driven and conservative. Repositories with bundled third-party material or product framing are escalated, not licensed automatically.
 - `communication.message_heading` and `communication.figure_coverage` are proxies — a numeral in a heading, a ratio of figures — for judgements the gate cannot make. They report a shape, not a quality, which is why they stay `recommended`.
 - The gate cannot verify that an architecture diagram came from gitdiagram, only that its click targets resolve. Provenance is required prose, not a check, and an honest provenance line is the author's obligation.
@@ -154,7 +154,7 @@ The gate reads the README and the repository (workflows, `pyproject.toml`, `pack
 
 **Status:** Maintained
 
-Standard v1.3, manifest v1.3.0 (rendered-line length ceiling plus a raw-file ceiling, gitdiagram as the architecture-diagram source with a click-link check, the `communication.*` family at `recommended`, and the comparator in `analytical.quantitative` implemented rather than only described). Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md) — 13/13 PASS, 30 recommended warnings enumerated. Repository last updated 2026-09-21.
+Standard v1.4, manifest v1.4.0 (design system v2.1: banner, badges and diagrams follow braga-portfolio-v2 `design-system/DECISIONS.md` D-051–D-054, with three recommended checks that report drift). Before that, standard v1.3 (rendered-line length ceiling plus a raw-file ceiling, gitdiagram as the architecture-diagram source with a click-link check, the `communication.*` family at `recommended`, and the comparator in `analytical.quantitative` implemented rather than only described). Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md) — 13/13 PASS, 30 recommended warnings enumerated. Repository last updated 2026-09-21.
 
 ## License
 
