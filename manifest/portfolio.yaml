@@ -100,10 +100,10 @@ projects:
     architecture_diagram_generated: 2026-09-21
     status: Complete
     title: "Austria Data-Job Market Intelligence"
-    descriptor: "One-day snapshot of 720 core data-role postings from five public sources, the AMS JobBarometer 2020–2025, and Eurostat vacancy seasonality."
+    descriptor: "Snapshot of Austrian data-role job ads, the AMS JobBarometer 2020–2025 and Eurostat vacancy seasonality, set against public GitHub evidence of the same skills."
     banner: generated
-    primary_chart: outputs/figures/F03_styria_vs_austria_families.png
-    primary_chart_alt: ""   # the author writes this after looking at the chart; the fixer never invents it
+    primary_chart: outputs/figures/BQ21_evidence_gap.png
+    primary_chart_alt: "Scatter of capabilities: share of Austrian data-role ads that mention each capability (x axis) against share of observed public GitHub candidates with project evidence for it (y axis). SQL, data quality, data warehouse modelling, Azure and Power BI sit far below the diagonal. Python, machine learning and software engineering sit above it. Tag: CALIBRATED."   # copied from the alt text already committed in the repo README
 
   - name: energy-procurement-risk-analyzer
     github: RafaelBraga-Kribitz/energy-procurement-risk-analyzer
