@@ -19,7 +19,7 @@
 # Status vocabulary produced by the gate for every requirement:
 #   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
 
-version: "1.4.0"
+version: "1.5.0"
 standard: docs/README_STANDARD.md
 
 # Two ceilings, because raw line count punishes exactly the content the standard wants more of.
@@ -474,6 +474,39 @@ requirements:
     remediation: manual
     human_escalation: null
     notes: "A deterministic proxy for a finding-style heading, and only a proxy. The gate does not judge whether the sentence is a good message; that is a review item in docs/AGENT_GUIDE.md."
+
+  - id: communication.plain_language
+    title: Prose sentences are short
+    applies_to: [all]
+    severity: recommended
+    check: plain_language
+    evidence: "Fewer than 20 % of the README's prose sentences exceed 25 words. Prose excludes fenced and indented code, tables, headings, badges and link lists; a paragraph or list item is joined before it is split into sentences; NOT_APPLICABLE under 5 prose sentences"
+    remediation: manual
+    human_escalation: null
+    excellence: false
+    notes: "Added in 1.5.0. A deterministic proxy for plain language: it counts words, not clarity. The passive-voice figure in `python -m readme_quality prose` is a heuristic the gate does not use."
+
+  - id: communication.no_internal_codes
+    title: Prose uses plain names, not internal codes
+    applies_to: [all]
+    severity: recommended
+    check: no_internal_codes
+    evidence: "No bare internal code (F-222, D-026, BQ45, S1_03, Layer 2, Module A, C1_forecast_timeline) in prose outside a legend or glossary section, a line that defines the code, code spans, tables and link targets; allowlisted prefixes such as ISO-8601 do not count"
+    remediation: manual
+    human_escalation: null
+    excellence: false
+    notes: "Added in 1.5.0. A deterministic proxy: the patterns are in readme_quality/prose.py, and a code the patterns do not know passes. The passive-voice figure in `python -m readme_quality prose` is a heuristic the gate does not use."
+
+  - id: communication.decision_owner
+    title: The opening names who decides
+    applies_to: [all]
+    severity: recommended
+    check: decision_owner
+    evidence: "The prose before the first H2 holds a role term (manager, analyst, buyer, team, ...) and a decision term (decides, choose, allocate, adopt, ...)"
+    remediation: manual
+    human_escalation: null
+    excellence: false
+    notes: "Added in 1.5.0. A deterministic proxy: it finds the words, it does not judge whether the right person is named. The passive-voice figure in `python -m readme_quality prose` is a heuristic the gate does not use."
 
   # ------------------------------------------------------------------ links
   - id: links.images

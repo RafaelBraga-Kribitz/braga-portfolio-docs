@@ -168,6 +168,19 @@ concept is always represented the same way, and the visual never exaggerates the
 | `communication.figure_coverage` | Figures in the README ≥ `min(3, floor(0.25 × figures on disk))`; the directory is `figures_dir`, else the first of `reports/`, `outputs/figures/`, `docs/assets/` that holds figures. On both sides of the ratio the banner, the author portrait and badge shields are excluded | analytical | recommended | never |
 | `communication.chart_caption` | A caption paragraph (italic, blockquote or plain, ≥ 4 words) within two lines of the primary chart, not identical to its alt text | all | recommended | never |
 | `communication.message_heading` | The results section's own H2, or an H2/H3 inside it, contains a numeral; NA when incomplete or when there is no results section | analytical | recommended | never |
+| `communication.plain_language` | Fewer than 20 % of the README's prose sentences exceed 25 words; NA under 5 prose sentences | all | recommended | never |
+| `communication.no_internal_codes` | No bare internal code (`F-222`, `D-026`, `BQ45`, `S1_03`, `Layer 2`, `Module A`, `C1_forecast_timeline`) in prose outside a legend or glossary section or a line that defines the code | all | recommended | never |
+| `communication.decision_owner` | The prose before the first H2 names a role (manager, analyst, buyer, team, ...) and a decision term (decides, choose, allocate, adopt, ...) | all | recommended | never |
+
+The last three rows (new in v1.5) share one sentence model, `readme_quality/prose.py`. Prose means the
+lines a reader reads as sentences: code, tables, headings, badges, link lists and HTML are removed
+first. A paragraph or list item is then joined before it is split into sentences, so hard-wrapping the
+source does not change the result and two list items stay two sentences. Indented code is dropped too.
+All three are deterministic proxies. They count words,
+patterns and role terms; they do not judge whether the prose is clear or the right person is named.
+`python -m readme_quality prose --repo <checkout> [--file FILE] [--json]` prints the same measurement
+(sentences, long, passive and plain-sentence shares, internal codes, decision owner) and never gates. Its
+passive-voice figure is a heuristic that no check uses.
 
 The fixer writes nothing here that it has not been given. Its one action is `communication.alt_distinct`:
 when a primary chart's alt text is empty or copied from the banner, it substitutes the registry's
@@ -292,8 +305,19 @@ evidence, promote it once the repositories conform.
 are proxies — a ratio and a numeral — for judgements the gate cannot make, and a proxy that blocks a
 merge starts getting satisfied by its letter.
 
-Remediation is separate work, one repository at a time. This version creates the contract and the
-warnings; the backlog is enumerated in [`readme-audit-latest.md`](readme-audit-latest.md).
+### Promotion intent for v1.5
+
+| Id | Promote to `required` when | Blocking today |
+|---|---|---|
+| `communication.plain_language` | every registered repository conforms | none among the 11 audited checkouts after the 2026-10-28 rewrites (the warehouse README was at 21.7 % before); `dsx` and `bk-viz` are not measured |
+| `communication.no_internal_codes` | every registered repository conforms | `brazil-2026-election-forecast`: `T-14` and `T-30` are forecast horizons (days before the vote) that the code pattern reads as internal codes. Its README is unchanged because the viability verdict is "sunk, freeze with summary only" and the owner has not decided. |
+| `communication.decision_owner` | every registered repository conforms | `governance-bootstrap`, `Chart_Audit_Framework`, `brazil-2026-election-forecast`: their READMEs are unchanged pending the owner's decision on the "sunk" verdicts |
+
+Source: `BRAGA_REPOS_ROOT=<worktrees> python -m readme_quality portfolio` on the 11 local checkouts, 2026-10-28,
+after the README rewrites on branch `readme/business-acumen-2026-10`, plus `audit --repo .` for this
+repository, which passes all three. `dsx` and `bk-viz` have no local checkout. These three rows stay
+`recommended` until the remaining READMEs conform; the prose rules are proxies, and a proxy that blocks a
+merge starts getting satisfied by its letter.
 
 ## 7. Out of scope
 

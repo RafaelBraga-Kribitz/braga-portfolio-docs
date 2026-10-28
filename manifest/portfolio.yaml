@@ -223,7 +223,7 @@ projects:
 
   - name: brazil-2026-election-forecast
     github: RafaelBraga-Kribitz/brazil-2026-election-forecast
-    path: brazil-2026-election-forecast
+    path: brazil_presidential_election_prediction_2026
     type: analytical
     status: In development
     title: "Brazil 2026 Election Forecast"

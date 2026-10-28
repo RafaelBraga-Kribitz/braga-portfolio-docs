@@ -9,7 +9,7 @@
 
 **Status:** Maintained
 
-A portfolio of thirteen public repositories drifts into thirteen README styles, and a visitor cannot tell a well-documented project from a well-formatted one. This repository holds the one contract every public BRAGA project must meet, and the tooling that checks, fixes, and illustrates it.
+The portfolio owner decides which standard every public BRAGA repository must meet. A portfolio of thirteen public repositories drifts into thirteen README styles, and a visitor cannot tell a well-documented project from a well-formatted one. This repository holds the one contract every public BRAGA project must meet, and the tooling that checks, fixes, and illustrates it.
 
 ## What it does
 
@@ -17,7 +17,7 @@ The standard says what "great" means for a README of a given project type. A mac
 
 ```text
 Standard  docs/README_STANDARD.md      what "great" means, per project type
-Manifest  manifest/requirements.yaml   55 requirement ids, severity, check, remediation, escalation (v1.4.0)
+Manifest  manifest/requirements.yaml   58 requirement ids, severity, check, remediation, escalation (v1.5.0)
 Registry  manifest/portfolio.yaml      declared type, status, hero, demo, license, diagram facts per project
 Gate      readme_quality.audit         PASS / PASS_WITH_EXCELLENCE / NOT_APPLICABLE / WARN / FAIL / BLOCKED_HUMAN
 Fixer     readme_quality.fix           safe remediation from evidence only
@@ -128,7 +128,7 @@ The gate reads the README and the repository (workflows, `pyproject.toml`, `pack
 
 **Status:** Maintained
 
-Standard v1.4, manifest v1.4.0 (design system v2.1: banner, badges and diagrams follow braga-portfolio-v2 `design-system/DECISIONS.md` D-051–D-054, with three recommended checks that report drift). Before that, standard v1.3 (rendered-line length ceiling plus a raw-file ceiling, gitdiagram as the architecture-diagram source with a click-link check, the `communication.*` family at `recommended`, and the comparator in `analytical.quantitative` implemented rather than only described). Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md) — 13/13 PASS, 30 recommended warnings enumerated. Repository last updated 2026-09-21.
+Standard v1.5, manifest v1.5.0. Version 1.5 adds three recommended checks on plain language: sentence length, internal codes and a named decision owner. Version 1.4 moved to design system v2.1: banner, badges and diagrams follow the decision log of braga-portfolio-v2 (`design-system/DECISIONS.md`), with three recommended checks that report drift. Version 1.3 added a rendered-line length ceiling plus a raw-file ceiling, gitdiagram as the architecture-diagram source with a click-link check, the `communication.*` family at `recommended`, and the comparator in `analytical.quantitative`. Last portfolio run: [`docs/readme-audit-latest.md`](docs/readme-audit-latest.md). Repository last updated 2026-10-28.
 
 ## License
 
