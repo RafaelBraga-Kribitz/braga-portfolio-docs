@@ -7,6 +7,7 @@
   python -m readme_quality diagram  --repo PATH | --name NAME --input RAW.mmd [--accent NODE] [--direction TD|LR] [--out PATH]
   python -m readme_quality detect   PATH
   python -m readme_quality explain  REQUIREMENT_ID
+  python -m readme_quality prose    --repo PATH [--file FILE] [--json]
   python -m readme_quality portfolio [--fix] [--json]
 """
 from __future__ import annotations
@@ -127,6 +128,30 @@ def cmd_explain(args) -> int:
     print(f"  escalation : {r.human_escalation or 'never'}")
     if r.notes:
         print(f"  notes      : {r.notes}")
+    return 0
+
+
+def cmd_prose(args) -> int:
+    """Measure the README's prose (sentence length, passive heuristic, internal codes, decision owner). Never a gate."""
+    from .parse import find_readme
+    from .prose import prose_report
+    path = Path(args.file) if args.file else find_readme(Path(args.repo))
+    if path is None or not path.is_file():
+        raise SystemExit(f"no README found for {args.repo!r}")
+    rep = prose_report(path.read_text(encoding="utf-8", errors="replace"))
+    if args.json:
+        print(json.dumps({"file": str(path), **rep}, indent=2, ensure_ascii=False))
+        return 0
+    o = rep["decision_owner"]
+    print(f"file = {path}")
+    print(f"sentences = {rep['n_sentences']}")
+    print(f"long_share = {rep['long_share']:.1f} %")
+    print(f"passive_share = {rep['passive_share']:.1f} %")
+    print(f"ste_share = {rep['ste_share']:.1f} %")
+    print(f"internal_codes = {len(rep['codes'])}")
+    for c in rep["codes"][:20]:
+        print(f"  L{c['line']}: {c['code']}")
+    print(f"decision_owner = {'yes (' + o['role'] + ', ' + o['verb'] + ')' if o else 'no'}")
     return 0
 
 
@@ -252,6 +277,12 @@ def main(argv=None) -> int:
 
     e = sub.add_parser("explain", help="explain a requirement id")
     e.add_argument("id"); e.set_defaults(fn=cmd_explain)
+
+    pr = sub.add_parser("prose", help="measure the README's prose: sentence length, internal codes, decision owner")
+    pr.add_argument("--repo", default=".", help="checkout path; reads its README.md (default: current directory)")
+    pr.add_argument("--file", help="measure this Markdown file instead (for example the old README from `git show`)")
+    pr.add_argument("--json", action="store_true")
+    pr.set_defaults(fn=cmd_prose)
 
     dg = sub.add_parser("diagram", help="restyle a raw gitdiagram graph to the design system and verify its click targets"); sel(dg)
     dg.add_argument("--input", required=True, help="file holding the raw gitdiagram Mermaid graph")

@@ -10,6 +10,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import prose
 from .parse import BADGE_RE, GITHUB_BLOB_RE, Readme, Section, is_external, resolve_relative, github_slug
 from .repofacts import RepoFacts, normalize_dep
 
@@ -896,6 +897,42 @@ def diagram_design(ctx: CheckContext) -> Result:
     return Result(PASS, "every Mermaid block on the design-system theme")
 
 
+# ------------------------------------------------------------- v1.5: plain language
+# Deterministic proxies for "a stakeholder can read this": sentence length, bare internal codes,
+# and a named role that decides. The passive-voice figure in `readme_quality prose` is a heuristic
+# that no check here uses.
+def plain_language(ctx: CheckContext) -> Result:
+    """Under 20 % of prose sentences exceed 25 words."""
+    sents = prose.sentences(ctx.readme.text)
+    if len(sents) < 5:
+        return Result(NA, f"{len(sents)} prose sentence(s); too few to measure")
+    long_ = [s for s in sents if s.words > prose.LONG_WORDS]
+    share = 100 * len(long_) / len(sents)
+    if share < 20:
+        return Result(PASS, f"{len(long_)} of {len(sents)} prose sentences ({share:.1f} %) exceed {prose.LONG_WORDS} words")
+    ev = [f"L{s.line}: {s.words} words: {' '.join(s.text.split()[:12])} …" for s in long_[:5]]
+    return Result(FAIL, f"{len(long_)} of {len(sents)} prose sentences ({share:.1f} %) exceed {prose.LONG_WORDS} words; "
+                        "the plain-language target is under 20 %", evidence=ev)
+
+
+def no_internal_codes(ctx: CheckContext) -> Result:
+    """Prose uses plain names; a code appears only inside a legend, a definition line, code or a table."""
+    hits = prose.internal_codes(ctx.readme.text)
+    if not hits:
+        return Result(PASS, "no bare internal codes in prose")
+    shown = ", ".join(f"L{h.line} {h.code}" for h in hits[:5]) + (" …" if len(hits) > 5 else "")
+    return Result(FAIL, f"{len(hits)} bare internal code(s) in prose outside a legend: {shown}; give each a plain name or a legend",
+                  evidence=[f"L{h.line}: {h.code}" for h in hits[:10]])
+
+
+def decision_owner(ctx: CheckContext) -> Result:
+    """The text before the first H2 names a role and a decision."""
+    owner = prose.decision_owner(ctx.readme.text)
+    if owner:
+        return Result(PASS, f"L{owner.line}: role '{owner.role}', decision term '{owner.verb}'")
+    return Result(FAIL, "the text before the first H2 names no role that decides; write who decides and what they choose")
+
+
 def _figures_on_disk(ctx: CheckContext) -> tuple[int, str]:
     """(count, directory) for the first configured figure directory that holds result figures.
 
@@ -1163,6 +1200,9 @@ CHECKS = {
     "figure_coverage": figure_coverage,
     "chart_caption": chart_caption,
     "message_heading": message_heading,
+    "plain_language": plain_language,
+    "no_internal_codes": no_internal_codes,
+    "decision_owner": decision_owner,
     "images_resolve": images_resolve,
     "links_resolve": links_resolve,
     "license_file": license_file,
