@@ -1,0 +1,49 @@
+# README gate baseline, 2026-10-28
+
+Run A: stale local clones under C:\Users\Benutzer1\Dev (every clone was 8 to 185 commits behind GitHub; see docs/PLAN_README_BUSINESS_ACUMEN_2026-10-28.md section 2).
+Command: BRAGA_REPOS_ROOT=/c/Users/Benutzer1/Dev python -m readme_quality portfolio   (manifest 1.4.0)
+
+```text
+------------------------------------------------------------------------------------------------
+decision-analytics-reconstruction     analytical   FAIL                   FAIL: identity.hero, identity.badges, identity.status_line, executive.summary, navigation.audience … · 7 warning(s)
+warehouse_humanoid_tco                analytical   FAIL                   FAIL: identity.h1, identity.badges, identity.status_line, evidence.see_it_running, analytical.epistemic … · 5 warning(s)
+austrian-mmm-budget-optimizer         analytical   FAIL                   FAIL: identity.hero, identity.badges, identity.status_line, executive.summary, navigation.audience … · 6 warning(s)
+austria-data-job-market-intelligence  analytical   FAIL                   FAIL: identity.hero, identity.badges, identity.status_line, executive.summary, navigation.audience … · 7 warning(s)
+energy-procurement-risk-analyzer      analytical   FAIL                   FAIL: identity.hero, identity.badges, identity.status_line, executive.summary, evidence.primary … · 6 warning(s)
+governance-bootstrap                  framework    FAIL                   FAIL: identity.hero, identity.badges, identity.problem, identity.status_line, executive.summary … · 1 warning(s)
+dsx                                   framework    FAIL                   
+funnel_correlation_py                 library      FAIL                   FAIL: identity.hero, identity.badges, identity.problem, identity.status_line, executive.summary … · 3 warning(s)
+bk-viz                                library      FAIL                   
+NextMove                              application  FAIL                   FAIL: readme.exists
+metric_lineage_simulator              application  FAIL                   FAIL: readme.exists
+Chart_Audit_Framework                 framework    FAIL                   FAIL: readme.exists
+brazil-2026-election-forecast         analytical   FAIL                   
+braga-portfolio-docs                  docs         PASS                   
+------------------------------------------------------------------------------------------------
+1/14 PASS
+```
+
+Run B: fresh worktrees of origin/<default> under C:\Users\Benutzer1\Dev\_readme-business-acumen-2026-10 (the published READMEs). This is the baseline the plan works from.
+Command: BRAGA_REPOS_ROOT=/c/Users/Benutzer1/Dev/_readme-business-acumen-2026-10 python -m readme_quality portfolio   (manifest 1.4.0; Brazil registry path already corrected)
+
+```text
+------------------------------------------------------------------------------------------------
+decision-analytics-reconstruction     analytical   PASS_WITH_EXCELLENCE   1 warning(s)
+warehouse_humanoid_tco                analytical   PASS_WITH_EXCELLENCE   1 warning(s)
+austrian-mmm-budget-optimizer         analytical   PASS_WITH_EXCELLENCE   
+austria-data-job-market-intelligence  analytical   PASS_WITH_EXCELLENCE   
+energy-procurement-risk-analyzer      analytical   PASS_WITH_EXCELLENCE   2 warning(s)
+governance-bootstrap                  framework    PASS                   
+dsx                                   framework    FAIL                   
+funnel_correlation_py                 library      PASS                   
+bk-viz                                library      FAIL                   
+NextMove                              application  PASS                   
+metric_lineage_simulator              application  PASS                   
+Chart_Audit_Framework                 framework    PASS                   
+brazil-2026-election-forecast         analytical   PASS                   2 warning(s)
+braga-portfolio-docs                  docs         FAIL                   
+------------------------------------------------------------------------------------------------
+11/14 PASS
+```
+
+fix --dry-run on run B: no changes proposed.
