@@ -9,6 +9,14 @@ touches a public portfolio README works against it.
 2. Read [`manifest/portfolio.yaml`](manifest/portfolio.yaml) for the target project's declared `type`, `status`, `hero`, `demo`, `architecture_diagram`, and license facts.
 3. Read [`docs/README_STANDARD.md`](docs/README_STANDARD.md) only when a requirement's intent is unclear; `python -m readme_quality explain <id>` is faster.
 
+## Before a new project's first commit
+
+A project is selected before it is built. Run [`docs/PROJECT_VALUE_EVALUATION.md`](docs/PROJECT_VALUE_EVALUATION.md)
+on the common cost basis in [`docs/value-evaluation/COST_BASIS.md`](docs/value-evaluation/COST_BASIS.md), read
+[`LESSONS_LEARNED.md`](LESSONS_LEARNED.md) and cite the lesson ids that apply, and commit `docs/economic-evaluation.md`
+plus the README's `## Why this project exists` section before the first implementation commit. A project that fails
+the 4× financial hurdle keeps that verdict even when it is built for other reasons.
+
 ## Done means the gate passes
 
 ```bash
@@ -36,6 +44,7 @@ Exit 1 is `FAIL`; exit 2 is `BLOCKED_HUMAN` (report the reason, do not work arou
 | The contract | `docs/README_STANDARD.md`, `manifest/requirements.yaml` |
 | Architecture diagrams | `docs/ARCHITECTURE_DIAGRAMS.md`, `blocks/architecture-mermaid.md`, `blocks/architecture-provenance.md` |
 | Project facts | `manifest/portfolio.yaml` |
+| Project selection | `docs/PROJECT_VALUE_EVALUATION.md`, `docs/value-evaluation/`, `LESSONS_LEARNED.md` |
 | The checks | `readme_quality/checks.py` |
 | Safe fixes | `readme_quality/fix.py`, `blocks/` |
 | Hero banner | `readme_quality/hero.py` (design system v2.1, D-051; tokens and faces via `readme_quality/design/`) |

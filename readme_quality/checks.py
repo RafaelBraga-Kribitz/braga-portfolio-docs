@@ -777,6 +777,39 @@ def no_results_statement(ctx: CheckContext) -> Result:
     return Result(FAIL, "incomplete project: say explicitly what does not exist yet (e.g. 'no results exist yet')")
 
 
+# v1.6: the pre-build value evaluation (docs/PROJECT_VALUE_EVALUATION.md) and its README summary.
+WHY_EXISTS_ALIASES = {"why this project exists"}
+EVALUATION_PATH = "docs/economic-evaluation.md"
+HURDLE_VERDICTS = ("passes financial hurdle", "fails financial hurdle", "insufficient evidence")
+WHY_WORDS = (60, 100)
+
+
+def value_evaluation(ctx: CheckContext) -> Result:
+    """docs/economic-evaluation.md states a hurdle verdict; README says why the project exists, near the top, and links it."""
+    evaluation = ctx.repo_dir / EVALUATION_PATH
+    if not evaluation.is_file():
+        return Result(FAIL, f"no {EVALUATION_PATH}; run the value evaluation (docs/PROJECT_VALUE_EVALUATION.md) before the build")
+    if not any(v in evaluation.read_text(encoding="utf-8", errors="replace").lower() for v in HURDLE_VERDICTS):
+        return Result(FAIL, f"{EVALUATION_PATH} states no hurdle verdict ({' | '.join(HURDLE_VERDICTS)})")
+    h2 = [s for s in ctx.readme.sections if s.level == 2]
+    found = [i for i, s in enumerate(h2) if any(a in s.norm for a in WHY_EXISTS_ALIASES)]
+    if not found:
+        return Result(FAIL, "no '## Why this project exists' section in the README")
+    pos, sec = found[0], h2[found[0]]
+    problems = []
+    if pos > 2:
+        problems.append(f"it is H2 number {pos + 1}; place it among the first three")
+    if not re.search(r"\]\(([^)]*/)?docs/economic-evaluation\.md[^)]*\)", sec.body):
+        problems.append(f"it does not link {EVALUATION_PATH}")
+    words = sum(len(t.split()) for _, t in prose.prose_lines(sec.body))
+    lo, hi = WHY_WORDS
+    if not lo <= words <= hi:
+        problems.append(f"it has {words} words; the target is {lo} to {hi}")
+    if problems:
+        return Result(FAIL, "'Why this project exists': " + "; ".join(problems))
+    return Result(PASS, f"why-section is H2 number {pos + 1}, {words} words, links {EVALUATION_PATH}")
+
+
 # ============================================================ communication
 # The checkable part of IBCS / ISO 24896 for a repository README: the same quantity is presented
 # the same way everywhere, every figure says what it shows, and the visual does not outrun the
@@ -1191,6 +1224,7 @@ CHECKS = {
     "no_hype": no_hype,
     "status_section": status_section,
     "no_results_statement": no_results_statement,
+    "value_evaluation": value_evaluation,
     "alt_text": alt_text,
     "alt_distinct": alt_distinct,
     "chart_theme": chart_theme,

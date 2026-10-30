@@ -16,6 +16,14 @@ human decision is pending). `make readme-audit REPO=/path/to/project` is the sam
 
 ## Mode A — you are building one project
 
+**Before the first commit**, write `docs/economic-evaluation.md` with the value evaluation in
+[`PROJECT_VALUE_EVALUATION.md`](PROJECT_VALUE_EVALUATION.md) (cost basis:
+[`value-evaluation/COST_BASIS.md`](value-evaluation/COST_BASIS.md)), retrieve [`../LESSONS_LEARNED.md`](../LESSONS_LEARNED.md)
+and name the lesson ids that apply, and put its 60-to-100-word summary in `## Why this project exists` near the top of
+the README. `honesty.value_evaluation` checks that both exist; it cannot check that they came first, so commit them
+first. After delivery, record expectations against actuals in `docs/lessons-learned.md` and add portfolio-wide lessons
+to `LESSONS_LEARNED.md`; never edit the original evaluation.
+
 The README is a living artifact. Run the gate whenever you change scope, add a result, or touch
 `README.md`, and keep it green:
 
@@ -91,7 +99,7 @@ see_it_running, demo_motion, live_demo) · `navigation.audience` · `analytical.
 quantitative, uncertainty, data, epistemic, method, validation, production_data) ·
 `technical.*` (architecture, architecture_links, structure, reproduce, stack) · `library.*` (example,
 contract, api, install_pin) · `honesty.*` (limitations, falsification, placeholders, hype,
-status_section, no_results_statement) · `communication.*` (alt_text, alt_distinct, chart_theme,
+status_section, no_results_statement, value_evaluation) · `communication.*` (alt_text, alt_distinct, chart_theme,
 figure_coverage, chart_caption, message_heading) · `links.*` (images, internal) · `meta.*`
 (license_file, license_section, author, length, length_total) · `excellence.*` (audience_personas,
 claim_tracing, why, project_specific).
