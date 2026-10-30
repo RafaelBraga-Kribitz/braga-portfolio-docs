@@ -8,7 +8,10 @@ in the project repository, before the first implementation commit. The shared co
 [`value-evaluation/README.md`](value-evaluation/README.md); the lessons to retrieve before a build are in
 [`../LESSONS_LEARNED.md`](../LESSONS_LEARNED.md).
 
-The prompt below is kept verbatim.
+**Local rule (owner decision, 2026-10-30).** §4 asks for one common hourly rate. This portfolio instead costs each
+project at the market rate of the role profile its work needs, from Austria Data-Job Market Intelligence. Different work
+needs different skills, and one published rate would read as a public price for the author. The rule and the profiles
+are in the cost basis. Everything else below is kept verbatim.
 
 ---
 

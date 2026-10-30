@@ -153,7 +153,7 @@ and the generator's own declared caveat). Full procedure and the licence positio
 | `honesty.hype` | No superlatives without a number in the same sentence (state-of-the-art, production-ready, seamless, …) | all | required | manual |
 | `honesty.status_section` | `## Status` with the vocabulary term and a date, version, or milestone | all | required | yes |
 | `honesty.no_results_statement` | Incomplete projects say what does not exist yet | incomplete | required | manual |
-| `honesty.value_evaluation` | `docs/economic-evaluation.md` states a 4× financial-hurdle verdict ([`PROJECT_VALUE_EVALUATION.md`](PROJECT_VALUE_EVALUATION.md)); `## Why this project exists` is among the first three H2 sections, 60 to 100 words, and links it (new in v1.6) | all | recommended | manual |
+| `honesty.value_evaluation` | `docs/economic-evaluation.md` states a 4× financial-hurdle verdict ([`PROJECT_VALUE_EVALUATION.md`](PROJECT_VALUE_EVALUATION.md)); `## Why this project exists` is among the first three H2 sections, 60 to 100 words, and links it (new in v1.6). `value_evaluation: none` + `value_evaluation_reason` in the registry makes it not applicable | all | recommended | manual |
 
 ### Communication (new in v1.3)
 
@@ -325,7 +325,7 @@ merge starts getting satisfied by its letter.
 
 | Id | Promote to `required` when | Blocking today |
 |---|---|---|
-| `honesty.value_evaluation` | every registered repository conforms and one new project has committed its evaluation before its first implementation commit | every registered repository warns until its pull request of 2026-10-30 merges; the portfolio results are in [`value-evaluation/README.md`](value-evaluation/README.md) |
+| `honesty.value_evaluation` | every repository without a registry exemption conforms, and one new project has committed its evaluation before its first implementation commit | the five projects shown on the portfolio website warn until their pull requests of 2026-10-30 merge; the other nine carry `value_evaluation: none` with a reason. Results: [`value-evaluation/README.md`](value-evaluation/README.md) |
 
 The check proves that the evaluation exists, states a verdict and is summarised near the top of the README. It
 cannot prove that the evaluation came before the build; the commit history does that, and a reviewer reads it.

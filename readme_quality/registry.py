@@ -58,6 +58,8 @@ class Project:
     architecture_diagram_reason: str = ""      # required when architecture_diagram: none
     architecture_diagram_commit: str = ""      # sha the committed diagram was generated from
     architecture_diagram_generated: str = ""   # YYYY-MM-DD the diagram was generated
+    value_evaluation: str = ""      # "" = required (recommended check) | "none" (needs value_evaluation_reason)
+    value_evaluation_reason: str = ""
     hero: str = ""                  # deprecated alias: "generated" -> banner; a path -> primary_chart
     hero_path: str = ""             # deprecated alias of banner_path
     demo: str = "motion"            # interactive: "motion" | "static" (static needs demo_reason)
@@ -163,6 +165,8 @@ def load_registry(path: Path | str | None = None, repos_root: str | Path | None 
         declared_arch = (p.architecture_diagram or "").strip().lower()
         if declared_arch and declared_arch not in ARCH_DIAGRAM_MODES:
             raise SystemExit(f"project {p.name}: architecture_diagram {p.architecture_diagram!r} (valid: {sorted(ARCH_DIAGRAM_MODES)})")
+        if (p.value_evaluation or "").strip().lower() not in ("", "none"):
+            raise SystemExit(f"project {p.name}: value_evaluation {p.value_evaluation!r} (valid: '' or 'none')")
         projects.append(p)
     return Registry(path=path, repos_root=root, author=author, status_vocabulary=vocab, projects=projects)
 

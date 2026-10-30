@@ -786,6 +786,11 @@ WHY_WORDS = (60, 100)
 
 def value_evaluation(ctx: CheckContext) -> Result:
     """docs/economic-evaluation.md states a hurdle verdict; README says why the project exists, near the top, and links it."""
+    if (getattr(ctx.project, "value_evaluation", "") or "").strip().lower() == "none":
+        reason = (getattr(ctx.project, "value_evaluation_reason", "") or "").strip()
+        if reason:
+            return Result(NA, f"registry declares value_evaluation: none — {reason}")
+        return Result(FAIL, "registry declares value_evaluation: none but gives no value_evaluation_reason")
     evaluation = ctx.repo_dir / EVALUATION_PATH
     if not evaluation.is_file():
         return Result(FAIL, f"no {EVALUATION_PATH}; run the value evaluation (docs/PROJECT_VALUE_EVALUATION.md) before the build")

@@ -58,3 +58,14 @@ def test_warns_when_late_unlinked_or_off_length(tmp_path, manifest, registry):
     assert "place it among the first three" in f.message
     assert "does not link docs/economic-evaluation.md" in f.message
     assert "has 4 words; the target is 60 to 100" in f.message
+
+
+def test_registry_exemption_needs_a_reason(tmp_path, manifest, registry):
+    repo = make_repo(tmp_path, "study", F.ANALYTICAL, COMMON_FILES)
+    exempt = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated",
+                     value_evaluation="none", value_evaluation_reason="not shown on the portfolio website")
+    f = next(x for x in run(repo, exempt, manifest, registry).findings if x.id == RID)
+    assert f.status == "NOT_APPLICABLE" and "not shown on the portfolio website" in f.message
+    bare = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated", value_evaluation="none")
+    f = next(x for x in run(repo, bare, manifest, registry).findings if x.id == RID)
+    assert f.status == "WARN" and "no value_evaluation_reason" in f.message

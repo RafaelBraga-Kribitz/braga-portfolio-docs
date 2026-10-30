@@ -12,7 +12,7 @@ touches a public portfolio README works against it.
 ## Before a new project's first commit
 
 A project is selected before it is built. Run [`docs/PROJECT_VALUE_EVALUATION.md`](docs/PROJECT_VALUE_EVALUATION.md)
-on the common cost basis in [`docs/value-evaluation/COST_BASIS.md`](docs/value-evaluation/COST_BASIS.md), read
+on the cost basis in [`docs/value-evaluation/COST_BASIS.md`](docs/value-evaluation/COST_BASIS.md) (a market rate per role profile), read
 [`LESSONS_LEARNED.md`](LESSONS_LEARNED.md) and cite the lesson ids that apply, and commit `docs/economic-evaluation.md`
 plus the README's `## Why this project exists` section before the first implementation commit. A project that fails
 the 4× financial hurdle keeps that verdict even when it is built for other reasons.
