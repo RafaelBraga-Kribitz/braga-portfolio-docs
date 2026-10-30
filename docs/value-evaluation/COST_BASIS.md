@@ -1,6 +1,6 @@
 # Cost basis for project value evaluations
 
-Version 1.1 | 30 October 2026. Every `docs/economic-evaluation.md` uses these conventions. The method is
+Version 1.2 | 30 October 2026. Every `docs/economic-evaluation.md` uses these conventions. The method is
 [`../PROJECT_VALUE_EVALUATION.md`](../PROJECT_VALUE_EVALUATION.md).
 
 **Owner decision (2026-10-30), replacing the method's "one common rate":** each project is costed at the market rate
@@ -48,24 +48,23 @@ as a reversal check.
 | AI assistance | €2 per active hour | Allowance. Agent-assisted builds; plan and token volumes are not recorded in the repositories. A subscription of about €180 a month spread over about 125 active project hours a month gives €1.4 per hour; €2 covers retries and API overage. Marginal expenditure. |
 | Equipment, electricity, internet | €1 per active hour | Allowance, allocated overhead (not marginal). |
 | Hosting, compute, data | €0 unless the page states otherwise | GitHub, GitHub Pages and Tableau Public free tiers; public data. Machine runtime is never charged as employee hours. |
-| Maintenance over the horizon | 10 % of build hours per year, at the project's all-in rate | Convention, applied to every project and every alternative. |
+| Maintenance | 10 % of build hours per year **of use**, at the project's all-in rate, beyond any maintenance already inside the scope estimate | Convention, applied to every project and every alternative. A study that informs one decision is used for one year; a tool reused every year is maintained every year. |
 
 ## Hours per project
 
-No time log exists. **Central hours = distinct commit days on the default branch × 4 h**, the convention behind the
-relative effort already on record in [`../viability/README.md`](../viability/README.md) (2026-10-28), updated with the
-commits up to 2026-10-30. The hours stand for active, agent-assisted effort, not a human-equivalent delivery estimate;
-elapsed calendar time is separate and is not cost. Sensitivity: 0.5× and 1.5× hours. The session-span check (commit
-timestamps grouped at gaps of 90 minutes or less, plus 30 minutes per session) is lower everywhere because squashed
-commits hide work.
+No time log exists. **Central hours are the owner's scope estimates (2026-10-30)**, task by task, because commit days hide
+squashed private work. Where the owner gave none, the charter's committed effort budget is used. Each estimate covers
+discovery, data preparation, development, validation, documentation and, where stated, first-year maintenance. The
+hours stand for active, agent-assisted effort; elapsed calendar time is separate and is not cost. Sensitivity: 0.5× and
+1.5× hours. The commit-day count (days with a commit × 4 h, the convention of 2026-10-28) is kept as a cross-check.
 
-| Project | First commit | Commit days | Central h | 0.5× / 1.5× h | Build cost (central · 0.5× · 1.5×) | Session-span check |
+| Project | Source of central hours | Central h | 0.5× / 1.5× h | All-in rate | Build cost (central) | Commit-day check |
 |---|---|---|---|---|---|---|
-| warehouse_humanoid_tco | 2026-05-21 | 21 | 84 | 42 / 126 | €4,536 · €2,268 · €6,804 | 38 h |
-| decision-analytics-reconstruction | 2026-05-07 | 36 | 144 | 72 / 216 | €7,776 · €3,888 · €11,664 | 105 h |
-| austrian-mmm-budget-optimizer | 2026-08-04 | 9 | 36 | 18 / 54 | €1,944 · €972 · €2,916 | 17 h |
-| energy-procurement-risk-analyzer | 2026-07-19 | 15 | 60 | 30 / 90 | €2,820 · €1,410 · €4,230 | 32 h |
-| austria-data-job-market-intelligence | 2026-09-17 | 7 | 28 | 14 / 42 | €1,260 · €630 · €1,890 | 9 h |
+| warehouse_humanoid_tco | charter: 8 to 10 part-time weeks × 20 h | 180 | 90 / 270 | €54 | €9,720 | 84 h |
+| decision-analytics-reconstruction | owner scope: data and segments 80, allocation 100, poll tracking 70, integration and campaign support 70 | 320 | 160 / 480 | €54 | €17,280 | 144 h |
+| austrian-mmm-budget-optimizer | owner scope: data 40, model 60, validation 50, optimiser 30, reporting and first-year maintenance 40 | 220 | 110 / 330 | €54 | €11,880 | 36 h |
+| energy-procurement-risk-analyzer | charter effort budget: 11.5 days × 8 h | 92 | 46 / 138 | €47 | €4,324 | 60 h |
+| austria-data-job-market-intelligence | owner scope: acquisition 90, analysis 40, presentation 60, validation 30, first-year maintenance 20 | 240 | 120 / 360 | €45 | €10,800 | 28 h |
 
 ## Perspective
 
