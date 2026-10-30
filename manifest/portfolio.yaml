@@ -38,6 +38,8 @@ status_vocabulary: [Prototype, Foundation, In development, Functional, Complete,
 #   license: explicit license id (policy §1 step 3); license_notice: NOTICE text for bundled third-party material;
 #   license_blocked_reason: escalation, allowed only for contract/employer work or conflicting declarations
 #   public_data: false => production-data section not required
+#   value_evaluation: none requires value_evaluation_reason (honesty.value_evaluation becomes NOT_APPLICABLE);
+#     empty = docs/economic-evaluation.md and the README why-section are expected (docs/PROJECT_VALUE_EVALUATION.md)
 #   estimation: none => uncertainty check not applicable
 
 projects:
@@ -124,6 +126,8 @@ projects:
     type: framework
     architecture_diagram: gitdiagram
     status: Maintained
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "governance-bootstrap"
     descriptor: "A vendorable governance kit: YAML findings that ratchet from open gap to CI-enforced gate, synced bidirectionally to every consumer project."
     banner: generated
@@ -136,6 +140,8 @@ projects:
     architecture_diagram_commit: 22f2ffe
     architecture_diagram_generated: 2026-09-21
     status: Maintained
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "DSX"
     tagline: "Declare. Substantiate. eXplain."
     descriptor: "Data Science, eXamined: a spec-driven workflow with deterministic gates that block leakage, underpowered designs, and overclaimed results."
@@ -147,6 +153,8 @@ projects:
     path: funnel_correlation_py
     type: library
     status: Functional
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "funnel-correlation-py"
     descriptor: "Binarize, correlate, plot: a Python port of the R correlationfunnel package for ranking feature–target associations before modelling."
     banner: generated
@@ -158,6 +166,8 @@ projects:
     path: bk-viz
     type: library
     status: Functional
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "bk-viz"
     descriptor: "The Braga-Kribitz design system applied to matplotlib charts, so a figure from any repository is indistinguishable from the site."
     banner: generated
@@ -173,6 +183,8 @@ projects:
     architecture_diagram_generated: 2026-09-21
     interactive: false
     status: In development
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "NextMove"
     descriptor: "A headless behavioural decision engine for e-commerce next-best-action."
     banner: generated
@@ -188,6 +200,8 @@ projects:
     interactive: true
     incomplete: true
     status: In development
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "Metric Driver-Tree Studio"
     descriptor: "A driver-tree studio that keeps definitional identities, modelled elasticities, and untested beliefs apart, and ranks which guess to test first."
     banner: generated
@@ -202,6 +216,8 @@ projects:
     architecture_diagram: gitdiagram
     incomplete: true
     status: Foundation
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "Chart Audit Framework"
     descriptor: "Skill pack and read-only ratchet that routes each chart in a target repository to skip, re-verify, or re-audit."
     banner: generated
@@ -226,6 +242,8 @@ projects:
     path: brazil_presidential_election_prediction_2026
     type: analytical
     status: In development
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "Brazil 2026 Election Forecast"
     tagline: "Pre-register. Backtest. Score."
     descriptor: "Pre-registered Bayesian aggregation of public polls, validated leave-one-election-out on 2014-2022 and scored against the 2026 result."
@@ -236,6 +254,8 @@ projects:
     path: braga-portfolio-docs
     type: docs
     status: Maintained
+    value_evaluation: none
+    value_evaluation_reason: "not shown on the portfolio website; the value evaluation covers the website projects and every new project"
     title: "BRAGA README Quality Gate"
     descriptor: "The portfolio documentation contract, its machine-readable manifest, the gate, the fixer, and the hero generator."
     banner: generated

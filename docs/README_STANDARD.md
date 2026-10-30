@@ -153,6 +153,7 @@ and the generator's own declared caveat). Full procedure and the licence positio
 | `honesty.hype` | No superlatives without a number in the same sentence (state-of-the-art, production-ready, seamless, …) | all | required | manual |
 | `honesty.status_section` | `## Status` with the vocabulary term and a date, version, or milestone | all | required | yes |
 | `honesty.no_results_statement` | Incomplete projects say what does not exist yet | incomplete | required | manual |
+| `honesty.value_evaluation` | `docs/economic-evaluation.md` states a 4× financial-hurdle verdict ([`PROJECT_VALUE_EVALUATION.md`](PROJECT_VALUE_EVALUATION.md)); `## Why this project exists` is among the first three H2 sections, 60 to 100 words, and links it (new in v1.6). `value_evaluation: none` + `value_evaluation_reason` in the registry makes it not applicable | all | recommended | manual |
 
 ### Communication (new in v1.3)
 
@@ -256,6 +257,7 @@ Omit a section when genuinely irrelevant; never fill it with boilerplate.
 Problem statement (≤ 2 sentences)
 [PRIMARY CHART / SCREENSHOT / MERMAID]   the most-important-data visual, after the identity block
 ## Decision summary | What it does | The idea | Project status
+## Why this project exists         60 to 100 words from docs/economic-evaluation.md (first three H2)
 ## See it running                 (interactive)
 ## Explore this project
 ## Results                        (analytical)
@@ -318,6 +320,15 @@ after the README rewrites on branch `readme/business-acumen-2026-10`, plus `audi
 repository, which passes all three. `dsx` and `bk-viz` have no local checkout. These three rows stay
 `recommended` until the remaining READMEs conform; the prose rules are proxies, and a proxy that blocks a
 merge starts getting satisfied by its letter.
+
+### Promotion intent for v1.6
+
+| Id | Promote to `required` when | Blocking today |
+|---|---|---|
+| `honesty.value_evaluation` | every repository without a registry exemption conforms, and one new project has committed its evaluation before its first implementation commit | the five projects shown on the portfolio website warn until their pull requests of 2026-10-30 merge; the other nine carry `value_evaluation: none` with a reason. Results: [`value-evaluation/README.md`](value-evaluation/README.md) |
+
+The check proves that the evaluation exists, states a verdict and is summarised near the top of the README. It
+cannot prove that the evaluation came before the build; the commit history does that, and a reviewer reads it.
 
 ## 7. Out of scope
 

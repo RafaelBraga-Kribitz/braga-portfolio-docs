@@ -267,7 +267,7 @@ def _finding(rep, rid):
 
 
 def test_the_three_checks_are_recommended_in_the_manifest(manifest):
-    assert manifest.version == "1.5.0"
+    assert manifest.version == "1.6.0"
     for rid in ("communication.plain_language", "communication.no_internal_codes", "communication.decision_owner"):
         r = manifest.get(rid)
         assert r.severity == "recommended" and not r.excellence and r.remediation == "manual"

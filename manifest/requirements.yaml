@@ -19,7 +19,7 @@
 # Status vocabulary produced by the gate for every requirement:
 #   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
 
-version: "1.5.0"
+version: "1.6.0"
 standard: docs/README_STANDARD.md
 
 # Two ceilings, because raw line count punishes exactly the content the standard wants more of.
@@ -372,6 +372,17 @@ requirements:
     evidence: "Sentence such as 'no results exist yet' / 'results land at M7' / 'what does not exist'"
     remediation: manual
     human_escalation: null
+
+  - id: honesty.value_evaluation
+    title: The project says why it exists and links its value evaluation
+    applies_to: [all]
+    severity: recommended
+    check: value_evaluation
+    evidence: "docs/economic-evaluation.md exists and states a 4x-hurdle verdict (passes financial hurdle | fails financial hurdle | insufficient evidence); README has '## Why this project exists' among its first three H2 sections, 60 to 100 prose words, linking that file"
+    remediation: manual
+    human_escalation: null
+    excellence: false
+    notes: "Added in 1.6.0. The evaluation follows docs/PROJECT_VALUE_EVALUATION.md on the common cost basis in docs/value-evaluation/COST_BASIS.md. The check finds the file, the verdict words and the section; it does not judge the economics."
 
   # ------------------------------------------------------- communication (v1.3)
   # The checkable subset of IBCS Standards 2.0 / ISO 24896:2026 for a repository README, drawn from

@@ -1,5 +1,7 @@
 # Ex-ante business case: what a company employee should have forecast before the build
 
+> **Superseded for project selection on 2026-10-30** by the value evaluation v2.0 ([`../PROJECT_VALUE_EVALUATION.md`](../PROJECT_VALUE_EVALUATION.md)), which applies a 4× financial hurdle on one common cost basis; results in [`../value-evaluation/README.md`](../value-evaluation/README.md). These pages stay as the record of 2026-10-28.
+
 Date: 2026-10-28. Each page is written as if dated the week before the first commit. It forecasts value for the company that would use the tool. It is not a hiring-evidence score; the retrospective in `docs/viability/` scores that. The shared assumptions are in [`../viability/_assumptions.md`](../viability/_assumptions.md).
 
 **Read this first.** Every probability is an assumption with a range and a stated basis. Every euro value has a unit, a period and a source. The loaded hourly rate (EUR 35 to 60, central 45) is an assumption anchored on the advertised analytics floor, snapshot 2026-10-18 (open question 0 in the brief). Repository numbers keep their tags (CALIBRATED, SIMULATED, "units are not euros"). Hours are estimates from git ±50 %.

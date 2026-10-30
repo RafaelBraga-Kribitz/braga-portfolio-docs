@@ -12,6 +12,14 @@
 
 <!-- TEMPLATE: what exists today (implemented and runnable), what does not exist yet, and the sentence "No results exist yet." Name the milestone at which results land. -->
 
+## Why this project exists
+
+<!-- TEMPLATE: 60 to 100 words, taken from docs/economic-evaluation.md, which is written and committed before the
+     first implementation commit (docs/PROJECT_VALUE_EVALUATION.md in braga-portfolio-docs): the problem, the
+     intended decision or value, the expected result and cost, the 4x financial-hurdle status, the observed result
+     or "Not yet measured", and the link [economic evaluation](docs/economic-evaluation.md). Keep the original
+     expectation visible when actuals arrive. -->
+
 ## Explore this project
 
 | Audience | Start here |
