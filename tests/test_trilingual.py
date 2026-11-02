@@ -31,7 +31,7 @@ def test_trilingual_readmes_need_all_three_files_and_switch_links(tmp_path):
 
     assert audit_readmes(repo) == (
         "PASS",
-        "all three locale files exist and each links to PT-BR, EN-UK and DE-AT",
+        "all locale files and switch links are present; translated heading, code-block and length structure aligns",
         [],
     )
 
