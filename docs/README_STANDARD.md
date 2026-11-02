@@ -1,6 +1,6 @@
-# BRAGA Portfolio README Quality Standard v1.7
+# BRAGA Portfolio README Quality Standard v1.8
 
-**Status:** Active · **Last updated:** 2026-11-02 (v1.7: trilingual README completeness, navigation and change-set enforcement) · **Owner:** Rafael Braga-Kribitz
+**Status:** Active · **Last updated:** 2026-11-02 (v1.8: translated README structural parity guardrails) · **Owner:** Rafael Braga-Kribitz
 **Machine-readable companion:** [`../manifest/requirements.yaml`](../manifest/requirements.yaml) (requirement ids, severities, checks, remediation)
 **Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md) · **Architecture diagrams:** [`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md)
 
@@ -178,7 +178,7 @@ concept is always represented the same way, and the visual never exaggerates the
 
 A project opts into this contract when either translated README file exists or the English README declares all three locale filenames. The required files are `README.md` (EN-UK), `README.pt-BR.md` (PT-BR) and `README.de-AT.md` (DE-AT). Each file must expose working Markdown links to all three versions so readers can switch languages from any page. The checker runs automatically as part of `audit`; older single-language repositories remain unaffected.
 
-A trilingual update is complete only when all three files are changed in the same pull request or push. The reusable workflow watches `README*.md` and checks the changed-file set. Each version must be a full, meaning-preserving professional translation of the same source, with locale-appropriate terminology and conventions. Preserve the complete scope and intent: sections, claims, caveats, figures, units, dates, numbers, code, commands, links and technical behaviour. Do not summarize, omit, or add claims in a translated version. A human reviewer must confirm semantic accuracy; structural automation cannot certify translation quality.
+A trilingual update is complete only when all three files are changed in the same pull request or push. The reusable workflow watches `README*.md` and checks the changed-file set. Each version must be a full, meaning-preserving professional translation of the same source, with locale-appropriate terminology and conventions. Preserve the complete scope and intent: sections, claims, caveats, figures, units, dates, numbers, code, commands, links and technical behaviour. Do not summarize, omit, or add claims in a translated version. The gate also requires each translation to preserve the English heading outline and fenced-code language/order, and flags visible word counts outside 70%–150% of English. That broad range is an omission/addition guardrail, not a quality score or a proof of equivalence. A human reviewer must confirm semantic accuracy; structural automation cannot certify translation quality.
 
 The last three rows (new in v1.5) share one sentence model, `readme_quality/prose.py`. Prose means the
 lines a reader reads as sentences: code, tables, headings, badges, link lists and HTML are removed

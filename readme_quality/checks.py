@@ -116,6 +116,19 @@ def _vocab_match(value: str, vocab: list[str]) -> str:
     return ""
 
 
+
+def _is_language_switcher_line(line: str) -> bool:
+    """Recognize the three locale links as navigation, not as README prose."""
+    links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", line)
+    present = set()
+    for label, target in links:
+        normalized_target = Path(target.strip().strip("<>").split("#", 1)[0]).as_posix()
+        for language, filename in trilingual.README_FILES.items():
+            if normalized_target == filename and trilingual.LANGUAGE_PATTERNS[language].search(label):
+                present.add(language)
+    return present == set(trilingual.README_FILES)
+
+
 def _first_prose_paragraph(rd: Readme) -> str:
     """First paragraph of prose in the identity zone after the H1 (skips images, badges, status, html)."""
     paras: list[str] = []
@@ -135,7 +148,7 @@ def _first_prose_paragraph(rd: Readme) -> str:
                 paras.append(" ".join(cur))
                 cur = []
             continue
-        if s.startswith("#") or s.startswith("!["):
+        if s.startswith("#") or s.startswith("![") or _is_language_switcher_line(s):
             continue
         if s.startswith("<") or s.startswith("[!["):
             continue

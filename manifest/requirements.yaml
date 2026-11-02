@@ -19,7 +19,7 @@
 # Status vocabulary produced by the gate for every requirement:
 #   PASS · PASS_WITH_EXCELLENCE · NOT_APPLICABLE · FAIL · BLOCKED_HUMAN · WARN (recommended only)
 
-version: "1.7.0"
+version: "1.8.0"
 standard: docs/README_STANDARD.md
 
 # Two ceilings, because raw line count punishes exactly the content the standard wants more of.
@@ -524,11 +524,11 @@ requirements:
     applies_to: [all]
     severity: required
     check: trilingual_readmes
-    evidence: "When a trilingual set is detected, README.md, README.pt-BR.md and README.de-AT.md all exist and each links to all three locale files."
+    evidence: "When a trilingual set is detected, README.md, README.pt-BR.md and README.de-AT.md all exist, link to all three locale files, preserve the same heading outline and code-block labels, and stay within the broad length guardrail."
     remediation: manual
     human_escalation: null
     excellence: false
-    notes: "Added in 1.7.0. Automatic structural check; pull-request automation also requires all three files in the same change set. Translation accuracy and full, meaning-preserving coverage require reviewer confirmation."
+    notes: "Added in 1.7.0. Automatic structural check; pull-request automation also requires all three files in the same change set. Heading/code structure and a broad 0.70–1.50 word-count ratio flag likely omissions or additions; reviewers confirm full, meaning-preserving translation accuracy."
 
   # ------------------------------------------------------------------ links
   - id: links.images
