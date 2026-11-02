@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from readme_quality.audit import audit_repo
 from readme_quality.registry import Project
 from readme_quality.trilingual import audit_changed_files, audit_readmes
 from tests.conftest import make_repo, run
