@@ -41,8 +41,8 @@ jobs:
         working-directory: contract
         shell: bash
         env:
-          PR_BASE: \${{ github.event.pull_request.base.sha }}
-          PUSH_BEFORE: \${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
           base="$PUSH_BEFORE"
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
@@ -53,7 +53,7 @@ jobs:
             exit 0
           fi
           mapfile -t changed_files < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD -- 'README*.md')
-          python -m readme_quality trilingual --repo "$GITHUB_WORKSPACE/repo" --changed-files "\${changed_files[@]}"
+          python -m readme_quality trilingual --repo "$GITHUB_WORKSPACE/repo" --changed-files "${changed_files[@]}"
 
       - name: Audit README against the portfolio contract
         working-directory: contract
