@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import prose
+from . import prose, trilingual
 from .parse import BADGE_RE, GITHUB_BLOB_RE, Readme, Section, is_external, resolve_relative, github_slug
 from .repofacts import RepoFacts, normalize_dep
 
@@ -1181,6 +1181,12 @@ def why_section(ctx: CheckContext) -> Result:
     return Result(FAIL, "no why section")
 
 
+def trilingual_readmes(ctx: CheckContext) -> Result:
+    """Require a complete, navigable PT-BR / EN-UK / DE-AT README set when configured."""
+    status, message, evidence = trilingual.audit_readmes(ctx.repo_dir)
+    return Result(status, message, evidence)
+
+
 def project_specific_sections(ctx: CheckContext) -> Result:
     extras = []
     for s in ctx.readme.h2_sections:
@@ -1242,6 +1248,7 @@ CHECKS = {
     "plain_language": plain_language,
     "no_internal_codes": no_internal_codes,
     "decision_owner": decision_owner,
+    "trilingual_readmes": trilingual_readmes,
     "images_resolve": images_resolve,
     "links_resolve": links_resolve,
     "license_file": license_file,
