@@ -610,3 +610,13 @@ def test_registry_matches_ci_checkout_by_remote(tmp_path, manifest):
                    projects=[Project(name="real-name", path="real-name", github="Someone/real-name", type="analytical", status="Complete", license_blocked_reason="x")])
     p = project_for_repo(reg, repo, {"type": "library"})
     assert p.name == "real-name" and p.license_blocked_reason == "x"
+
+
+def test_problem_statement_skips_trilingual_navigation(tmp_path, manifest, registry):
+    switcher = "[🇧🇷 PT-BR](README.pt-BR.md) · [🇬🇧 EN-UK](README.md) · [🇦🇹 DE-AT](README.de-AT.md)"
+    repo = make_repo(tmp_path, "study", switcher + "\n\n" + F.ANALYTICAL, COMMON_FILES)
+    project = Project(name="study", path=str(repo), type="analytical", status="Complete", banner="generated")
+
+    report = run(repo, project, manifest, registry)
+
+    assert statuses(report)["identity.problem"] == "PASS"
