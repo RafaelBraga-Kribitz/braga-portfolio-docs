@@ -1,6 +1,9 @@
 from pathlib import Path
 
+from readme_quality.audit import audit_repo
+from readme_quality.registry import Project
 from readme_quality.trilingual import audit_changed_files, audit_readmes
+from tests.conftest import make_repo, run
 
 
 def make_trilingual_repo(tmp_path: Path) -> Path:
@@ -83,3 +86,16 @@ def test_non_readme_change_does_not_require_locale_update(tmp_path):
     status, _, _ = audit_changed_files(repo, ["src/model.py"])
 
     assert status == "PASS"
+
+
+def test_portfolio_audit_includes_trilingual_requirement(tmp_path, manifest, registry):
+    switcher = "[PT-BR](README.pt-BR.md) [EN-UK](README.md) [DE-AT](README.de-AT.md)"
+    repo = make_repo(tmp_path, "trilingual", "# Project\n\n" + switcher + "\n")
+    for filename in ("README.pt-BR.md", "README.de-AT.md"):
+        (repo / filename).write_text("# Project\n\n" + switcher + "\n", encoding="utf-8")
+    project = Project(name="trilingual", path=str(repo), type="analytical", status="Complete")
+
+    report = run(repo, project, manifest, registry)
+    requirement = next(item for item in report.findings if item.id == "communication.trilingual_readmes")
+
+    assert requirement.status == "PASS"
