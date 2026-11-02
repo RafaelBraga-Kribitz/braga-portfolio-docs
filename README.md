@@ -17,7 +17,7 @@ The standard says what "great" means for a README of a given project type. A mac
 
 ```text
 Standard  docs/README_STANDARD.md      what "great" means, per project type
-Manifest  manifest/requirements.yaml   58 requirement ids, severity, check, remediation, escalation (v1.5.0)
+Manifest  manifest/requirements.yaml   requirement ids, severity, check, remediation and escalation (v1.7.0)
 Registry  manifest/portfolio.yaml      declared type, status, hero, demo, license, diagram facts per project
 Gate      readme_quality.audit         PASS / PASS_WITH_EXCELLENCE / NOT_APPLICABLE / WARN / FAIL / BLOCKED_HUMAN
 Fixer     readme_quality.fix           safe remediation from evidence only
@@ -64,11 +64,11 @@ make test                                                          # the gate's 
 | Technical | `technical.architecture` `technical.structure` `technical.reproduce` (`technical.stack`, `technical.architecture_links`, `technical.diagram_design` recommended) | required / WARN |
 | Library and framework | `library.example` `library.contract` `library.api` (`library.install_pin` recommended) | required / WARN |
 | Honesty | `honesty.limitations` `honesty.placeholders` `honesty.hype` `honesty.status_section` `honesty.no_results_statement` (`honesty.falsification` recommended) | required / WARN |
-| Communication | `communication.alt_text` `.alt_distinct` `.chart_theme` `.figure_coverage` `.chart_caption` `.message_heading` | all recommended in v1.3; see the promotion table in the standard |
+| Communication | `communication.alt_text` `.alt_distinct` `.chart_theme` `.figure_coverage` `.chart_caption` `.message_heading` `.trilingual_readmes` | recommended checks, except trilingual completeness when configured |
 | Links and metadata | `links.images` `links.internal` `meta.license_file` `meta.license_section` `meta.author` `meta.length` (`meta.length_total` recommended) | required; license ownership can be `BLOCKED_HUMAN` |
 | Excellence | `excellence.audience_personas` `excellence.claim_tracing` `excellence.why` `excellence.project_specific` | never fails; sections outside the vocabulary are preserved and reported |
 
-Acceptance test: `make test` runs 69 tests covering no README, a minimal README, compliant analytical, library, framework, interactive, and foundation READMEs, project-specific sections, broken images and links, placeholders and hype, license mismatches and blocked licenses, status mismatches, non-existent reproduce targets, both length ceilings and the rendered-line counting, the comparator in `analytical.quantitative`, every `communication.*` id with a passing, a failing, and a not-applicable case, architecture click-link integrity, the diagram restyler's direction override and graph-content preservation, the fixer's idempotence, the hero guardrails, and design-system v2.1 compliance (banner version and no accent, neutral badges, the site's Mermaid theme, the vendored tokens against a design-system checkout). `python -m readme_quality audit --repo .` must pass on this repository.
+Acceptance test: `make test` runs the suite covering no README, a minimal README, compliant analytical, library, framework, interactive, and foundation READMEs, project-specific sections, broken images and links, placeholders and hype, license mismatches and blocked licenses, status mismatches, non-existent reproduce targets, both length ceilings and the rendered-line counting, the comparator in `analytical.quantitative`, every `communication.*` id with a passing, a failing, and a not-applicable case, architecture click-link integrity, the diagram restyler's direction override and graph-content preservation, the fixer's idempotence, the hero guardrails, and design-system v2.1 compliance (banner version and no accent, neutral badges, the site's Mermaid theme, the vendored tokens against a design-system checkout). `python -m readme_quality audit --repo .` must pass on this repository. The trilingual requirement is opt-in and enforces locale-file presence, three-way switch links, and all-three-files change sets in the reusable CI workflow; reviewers confirm translation fidelity.
 
 ## Architecture
 

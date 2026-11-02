@@ -42,6 +42,25 @@ No README yet? Copy `templates/<type>.md`, then replace every `<!-- TEMPLATE: ..
 content taken from the repository. The gate fails on leftover template markers and on placeholders
 (`TBD`, `Coming soon`, `{{ }}`), so an unfilled template cannot pass.
 
+## Three-language README updates
+
+For a repository using the trilingual system, keep these files in sync:
+
+- `README.md` — EN-UK
+- `README.pt-BR.md` — PT-BR
+- `README.de-AT.md` — DE-AT
+
+Translate the complete README, not a shortened adaptation. Preserve every section, claim, result, caveat, figure, unit, number, link, command and code block; adapt wording and conventions to each locale without changing meaning. Keep a PT-BR, EN-UK and DE-AT switch link in each file. When any version changes, revise all three in the same pull request and have a reviewer check the translation against the source.
+
+The audit detects an opted-in set automatically. To check a change set locally, pass its changed paths:
+
+```bash
+python -m readme_quality trilingual --repo /path/to/project \
+  --changed-files README.md README.pt-BR.md README.de-AT.md
+```
+
+GitHub Actions uses the same guard in `ci/readme-quality.yml`; its path filters include all root `README*.md` files. The gate checks file presence, switch links and paired updates. Translation fidelity still needs a semantic review.
+
 ## Mode B — you are remediating the portfolio
 
 ```bash

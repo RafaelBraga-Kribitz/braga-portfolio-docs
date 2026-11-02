@@ -155,6 +155,23 @@ def cmd_prose(args) -> int:
     return 0
 
 
+def cmd_trilingual(args) -> int:
+    """Check locale completeness and, when supplied, pull-request change pairing."""
+    from . import trilingual
+    repo_dir = Path(args.repo).resolve()
+    results = [trilingual.audit_readmes(repo_dir)]
+    if args.changed_files is not None:
+        results.append(trilingual.audit_changed_files(repo_dir, args.changed_files))
+    exit_code = 0
+    for status, message, evidence in results:
+        print(f"{status}: {message}")
+        for item in evidence:
+            print(f"  - {item}")
+        if status == "FAIL":
+            exit_code = 1
+    return exit_code
+
+
 def cmd_theme(args) -> int:
     """The design-system Mermaid theme (D-052): print it, or apply it to every block of Markdown files."""
     from . import brand
@@ -291,6 +308,11 @@ def main(argv=None) -> int:
                     help="override the generator's flowchart direction (layout only; the graph is unchanged)")
     dg.add_argument("--out", help="write the fenced block here instead of stdout")
     dg.set_defaults(fn=cmd_diagram)
+
+    tri = sub.add_parser("trilingual", help="check trilingual README completeness and change pairing")
+    tri.add_argument("--repo", default=".", help="repository checkout")
+    tri.add_argument("--changed-files", nargs="*", help="files changed in the pull request or push")
+    tri.set_defaults(fn=cmd_trilingual)
 
     th = sub.add_parser("theme", help="print the design-system Mermaid theme, or apply it to Markdown files")
     th.add_argument("files", nargs="*", help="Markdown files whose ```mermaid blocks to restyle in place")

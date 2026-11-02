@@ -1,6 +1,6 @@
-# BRAGA Portfolio README Quality Standard v1.3
+# BRAGA Portfolio README Quality Standard v1.7
 
-**Status:** Active · **Last updated:** 2026-09-21 (v1.3: `meta.length` measures rendered lines and `meta.length_total` caps the file; gitdiagram as the architecture-diagram source with a link-integrity check; the `communication.*` family; `analytical.quantitative` now tests the comparator it always described) · **Owner:** Rafael Braga-Kribitz
+**Status:** Active · **Last updated:** 2026-11-02 (v1.7: trilingual README completeness, navigation and change-set enforcement) · **Owner:** Rafael Braga-Kribitz
 **Machine-readable companion:** [`../manifest/requirements.yaml`](../manifest/requirements.yaml) (requirement ids, severities, checks, remediation)
 **Gate:** `python -m readme_quality audit --repo <checkout>` · **Agent guide:** [`AGENT_GUIDE.md`](AGENT_GUIDE.md) · **Architecture diagrams:** [`ARCHITECTURE_DIAGRAMS.md`](ARCHITECTURE_DIAGRAMS.md)
 
@@ -172,6 +172,13 @@ concept is always represented the same way, and the visual never exaggerates the
 | `communication.plain_language` | Fewer than 20 % of the README's prose sentences exceed 25 words; NA under 5 prose sentences | all | recommended | never |
 | `communication.no_internal_codes` | No bare internal code (`F-222`, `D-026`, `BQ45`, `S1_03`, `Layer 2`, `Module A`, `C1_forecast_timeline`) in prose outside a legend or glossary section or a line that defines the code | all | recommended | never |
 | `communication.decision_owner` | The prose before the first H2 names a role (manager, analyst, buyer, team, ...) and a decision term (decides, choose, allocate, adopt, ...) | all | recommended | never |
+| `communication.trilingual_readmes` | When a trilingual set is detected, `README.md`, `README.pt-BR.md` and `README.de-AT.md` all exist and each links to all three locale files | all | required when configured | never |
+
+#### Trilingual README contract
+
+A project opts into this contract when either translated README file exists or the English README declares all three locale filenames. The required files are `README.md` (EN-UK), `README.pt-BR.md` (PT-BR) and `README.de-AT.md` (DE-AT). Each file must expose working Markdown links to all three versions so readers can switch languages from any page. The checker runs automatically as part of `audit`; older single-language repositories remain unaffected.
+
+A trilingual update is complete only when all three files are changed in the same pull request or push. The reusable workflow watches `README*.md` and checks the changed-file set. Each version must be a full, meaning-preserving professional translation of the same source, with locale-appropriate terminology and conventions. Preserve the complete scope and intent: sections, claims, caveats, figures, units, dates, numbers, code, commands, links and technical behaviour. Do not summarize, omit, or add claims in a translated version. A human reviewer must confirm semantic accuracy; structural automation cannot certify translation quality.
 
 The last three rows (new in v1.5) share one sentence model, `readme_quality/prose.py`. Prose means the
 lines a reader reads as sentences: code, tables, headings, badges, link lists and HTML are removed
