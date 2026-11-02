@@ -10,10 +10,10 @@ README_FILES = {
     "DE-AT": "README.de-AT.md",
 }
 LANGUAGE_PATTERNS = {
-    language: re.compile(rf"\\b{language[:2]}[-_–]{language[3:]}\\b", re.IGNORECASE)
+    language: re.compile(rf"\b{language[:2]}[-_–]{language[3:]}\b", re.IGNORECASE)
     for language in README_FILES
 }
-MARKDOWN_LINK = re.compile(r"\\[([^\\]]+)\\]\\(([^)]+)\\)")
+MARKDOWN_LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
 
 def is_trilingual(repo_dir: Path) -> bool:
@@ -37,7 +37,7 @@ def audit_readmes(repo_dir: Path) -> tuple[str, str, list[str]]:
     if missing:
         errors.append("missing locale file(s): " + ", ".join(missing))
 
-    for locale, filename in README_FILES.items():
+    for filename in README_FILES.values():
         path = repo_dir / filename
         if not path.is_file():
             continue
@@ -50,9 +50,7 @@ def audit_readmes(repo_dir: Path) -> tuple[str, str, list[str]]:
                 and Path(target.split("#", 1)[0]).as_posix() == target_filename
             ]
             if not matching:
-                errors.append(
-                    f"{filename}: missing a {language} switch link to {target_filename}"
-                )
+                errors.append(f"{filename}: missing a {language} switch link to {target_filename}")
 
     if errors:
         return "FAIL", f"{len(errors)} trilingual README issue(s)", errors
@@ -65,7 +63,7 @@ def audit_changed_files(repo_dir: Path, changed_files: list[str]) -> tuple[str, 
         return "PASS", "repository has no trilingual README set; change-set pairing is not applicable", []
 
     required = set(README_FILES.values())
-    changed = {Path(path.replace("\\\\", "/")).as_posix() for path in changed_files}
+    changed = {Path(path.replace("\\", "/")).as_posix() for path in changed_files}
     changed_locale_files = changed & required
     if not changed_locale_files:
         return "PASS", "no README locale file changed", []
