@@ -27,7 +27,7 @@ def _finding(tmp_path, manifest, registry, readme, files):
 
 def test_the_check_is_recommended_and_manual(manifest):
     r = manifest.get(RID)
-    assert manifest.version == "1.7.0"
+    assert manifest.version == "1.8.0"
     assert r.severity == "recommended" and not r.excellence and r.remediation == "manual" and r.applies_to == ["all"]
 
 
